@@ -73,7 +73,6 @@ mod.provider('DataSources',()->
         'remove': {method:'DELETE',headers:headers},
         'delete': {method:'DELETE',headers:headers}
       }
-      console.log(actions)
       @resources[name] = new Resource(@,@url + path,paramDefualts,actions,options)
 
     removeResource: (name)->
