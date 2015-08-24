@@ -132,7 +132,6 @@ mod.provider('DataSources', function() {
           headers: headers
         }
       };
-      console.log(actions);
       return this.resources[name] = new Resource(this, this.url + path, paramDefualts, actions, options);
     };
 
