@@ -1,0 +1,11 @@
+{
+  "name": "adminr-datasources",
+  "version": "0.0.1",
+  "devDependencies": {
+    "browserify": "^11.0.1",
+    "coffeeify": "^1.1.0"
+  },
+    "scripts":{
+        "build":"mkdir dist;browserify -t coffeeify index.coffee -o dist/index.js"
+    }
+}

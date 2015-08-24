@@ -1,0 +1,27 @@
+{
+  "name": "adminr-datasources",
+  "version": "0.0.1",
+  "authors": [
+    "Jakub Knejzlik <jakub.knejzlik@gmail.com>"
+  ],
+  "description": "adminr datasources module",
+  "main": "dist/index.js",
+  "keywords": [
+    "adminr",
+    "datasource",
+    "resource"
+  ],
+  "license": "MIT",
+  "homepage": "www.knejzlik.cz",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular-resource": "~1.4.4",
+    "ngstorage": "~0.3.9"
+  }
+}
