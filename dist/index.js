@@ -202,23 +202,25 @@ Resource = (function() {
     this.actions = actions;
     this.options = options;
     methods = ['get', 'save', 'query', 'remove', 'delete'];
-    methods.forEach(function(method) {
-      return this[method] = function() {
-        var args;
-        args = arguments;
-        return Injector._$injector.get('$q')((function(_this) {
-          return function(resolve, reject) {
-            return _this.resource()[method].apply(_this.resource, args).$promise.then(resolve)["catch"](function(error) {
-              var ref;
-              if ((ref = error.status) === 401 || ref === 429) {
-                _this.dataSource.logout();
-              }
-              return reject(error);
-            });
-          };
-        })(this));
+    methods.forEach((function(_this) {
+      return function(method) {
+        return _this[method] = function() {
+          var args;
+          args = arguments;
+          return Injector._$injector.get('$q')((function(_this) {
+            return function(resolve, reject) {
+              return _this.resource()[method].apply(_this.resource, args).$promise.then(resolve)["catch"](function(error) {
+                var ref;
+                if ((ref = error.status) === 401 || ref === 429) {
+                  _this.dataSource.logout();
+                }
+                return reject(error);
+              });
+            };
+          })(this));
+        };
       };
-    });
+    })(this));
   }
 
   Resource.prototype.resource = function() {
