@@ -5,7 +5,7 @@ class Resource
 
     methods = ['get','save','query','remove','delete']
 
-    methods.forEach((method)->
+    methods.forEach((method)=>
       @[method] = ()->
         args = arguments
 #        params = new Array(arguments)
