@@ -195,16 +195,15 @@ Injector = require('./Injector.coffee');
 
 Resource = (function() {
   function Resource(dataSource, path, paramDefualts, actions, options) {
-    var i, len, method, methods;
+    var methods;
     this.dataSource = dataSource;
     this.path = path;
     this.paramDefualts = paramDefualts;
     this.actions = actions;
     this.options = options;
     methods = ['get', 'save', 'query', 'remove', 'delete'];
-    for (i = 0, len = methods.length; i < len; i++) {
-      method = methods[i];
-      this[method] = function() {
+    methods.forEach(function(method) {
+      return this[method] = function() {
         var args;
         args = arguments;
         return Injector._$injector.get('$q')((function(_this) {
@@ -219,7 +218,7 @@ Resource = (function() {
           };
         })(this));
       };
-    }
+    });
   }
 
   Resource.prototype.resource = function() {
