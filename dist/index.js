@@ -209,7 +209,7 @@ Resource = (function() {
         args = arguments;
         return Injector._$injector.get('$q')((function(_this) {
           return function(resolve, reject) {
-            return _this.resource().query.apply(_this.resource, args).$promise.then(resolve)["catch"](function(error) {
+            return _this.resource()[method].apply(_this.resource, args).$promise.then(resolve)["catch"](function(error) {
               var ref;
               if ((ref = error.status) === 401 || ref === 429) {
                 _this.dataSource.logout();
