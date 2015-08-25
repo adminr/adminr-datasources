@@ -205,12 +205,11 @@ Resource = (function() {
     for (i = 0, len = methods.length; i < len; i++) {
       method = methods[i];
       this[method] = function() {
-        var params;
-        params = new Array(arguments);
-        params.shift(this.resource);
+        var args;
+        args = arguments;
         return Injector._$injector.get('$q')((function(_this) {
           return function(resolve, reject) {
-            return _this.resource().query.apply(params).$promise.then(resolve)["catch"](function(error) {
+            return _this.resource().query.apply(_this.resource, args).$promise.then(resolve)["catch"](function(error) {
               var ref;
               if ((ref = error.status) === 401 || ref === 429) {
                 _this.dataSource.logout();
