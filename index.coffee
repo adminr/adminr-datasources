@@ -23,9 +23,10 @@ mod.provider('DataSources',()->
         name = Object.keys(@dataSources)[0]
       return @dataSources[name]
 
-    $get:($injector)->
+    $get:['$injector',($injector)->
       Injector._$injector = $injector
       return @
+    ]
 
   return new DataSourcesProvider()
 )

@@ -34,10 +34,12 @@ mod.provider('DataSources', function() {
       return this.dataSources[name];
     };
 
-    DataSourcesProvider.prototype.$get = function($injector) {
-      Injector._$injector = $injector;
-      return this;
-    };
+    DataSourcesProvider.prototype.$get = [
+      '$injector', function($injector) {
+        Injector._$injector = $injector;
+        return this;
+      }
+    ];
 
     return DataSourcesProvider;
 
