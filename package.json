@@ -8,5 +8,8 @@
   },
   "scripts": {
     "build": "mkdir dist;browserify -t coffeeify -t [ browserify-ngannotate --x .coffee ] index.coffee -o dist/index.js"
+  },
+  "dependencies": {
+    "content-range": "^0.2.0"
   }
 }

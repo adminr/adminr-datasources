@@ -166,7 +166,6 @@ DataSource = (function() {
           _this.setAuthorizationToken(response.data.token, sessionOnly);
           return resolve(response);
         })["catch"](function(error) {
-          console.log('error', error);
           return reject(error);
         });
       };
@@ -191,9 +190,11 @@ module.exports = {
 
 
 },{}],4:[function(require,module,exports){
-var Injector, Resource;
+var Injector, Resource, contentRange;
 
 Injector = require('./Injector.coffee');
+
+contentRange = require('content-range');
 
 Resource = (function() {
   function Resource(dataSource, path, paramDefualts, actions, options) {
@@ -206,20 +207,18 @@ Resource = (function() {
     methods = ['get', 'save', 'query', 'remove', 'delete'];
     methods.forEach((function(_this) {
       return function(method) {
-        return _this[method] = function() {
-          var args;
-          args = arguments;
-          return Injector._$injector.get('$q')((function(_this) {
-            return function(resolve, reject) {
-              return _this.resource()[method].apply(_this.resource, args).$promise.then(resolve)["catch"](function(error) {
-                var ref;
-                if ((ref = error.status) === 401 || ref === 429) {
-                  _this.dataSource.logout();
-                }
-                return reject(error);
-              });
-            };
-          })(this));
+        return _this[method] = function(args) {
+          var results;
+          results = this.resource()[method](args, function(data, headers) {
+            var range;
+            range = headers('Content-Range');
+            if (range) {
+              return results.range = contentRange.parse(range);
+            }
+          }, function(error) {
+            return results.error = error;
+          });
+          return results;
         };
       };
     })(this));
@@ -239,4 +238,71 @@ Resource = (function() {
 module.exports = Resource;
 
 
-},{"./Injector.coffee":3}]},{},[1]);
+},{"./Injector.coffee":3,"content-range":5}],5:[function(require,module,exports){
+(function (root, factory) {
+  // AMD
+  if (typeof define === 'function' && define.amd) define(['exports'], factory);
+  // Common JS
+  else if (typeof exports === 'object') factory(exports);
+  // Global
+  else factory((root.contentRange = {}));
+}(this, function (exports) {
+
+  /**
+   * Expose module.
+   */
+
+  exports.format = format;
+  exports.parse = parse;
+
+  /**
+   * Format the content-range header.
+   *
+   * @param {Object} options
+   * @param {String} options.name
+   * @param {Number} options.offset
+   * @param {Number} options.limit
+   * @param {Number} options.count
+   */
+
+  function format(options) {
+    options.count = typeof options.count === 'undefined' || options.count === null ?
+      '*' : options.count;
+
+    var start = options.offset;
+    var end = options.offset + options.limit - 1;
+
+    if (end - start < 0) return options.name + ' */' + options.count;
+
+    return options.name + ' ' + start + '-' + end + '/' + options.count;
+  }
+
+  /**
+   * Parse the content-range header.
+   *
+   * @param {String} str
+   * @returns {Object}
+   */
+
+  function parse(str) {
+    var matches;
+
+    if (matches = str.match(/^(\w+) (\d+)-(\d+)\/(\d+|\*)/)) return {
+        name: matches[1],
+        start: +matches[2],
+        end: +matches[3],
+        count: matches[4] === '*' ? null : +matches[4]
+      };
+
+    if (matches = str.match(/^(\w+) \*\/(\d+|\*)/)) return {
+        name: matches[1],
+        start: null,
+        end: null,
+        count: matches[2] === '*' ? null : +matches[2]
+      };
+
+    return null;
+  }
+
+}));
+},{}]},{},[1]);

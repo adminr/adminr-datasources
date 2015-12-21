@@ -1,4 +1,5 @@
 Injector = require('./Injector.coffee')
+contentRange = require('content-range')
 
 class Resource
   constructor:(@dataSource,@path,@paramDefualts,@actions,@options)->
@@ -6,17 +7,15 @@ class Resource
     methods = ['get','save','query','remove','delete']
 
     methods.forEach((method)=>
-      @[method] = ()->
-        args = arguments
-#        params = new Array(arguments)
-#        params.shift(@resource)
-        return Injector._$injector.get('$q')((resolve,reject)=>
-          @resource()[method].apply(@resource,args).$promise.then(resolve).catch((error)=>
-            if error.status in [401,429]
-              @dataSource.logout()
-            reject(error)
-          )
+      @[method] = (args)->
+        results = @resource()[method](args,(data,headers)->
+          range = headers('Content-Range')
+          if range
+            results.range = contentRange.parse(range)
+        ,(error)->
+          results.error = error
         )
+        return results
     )
 
   resource:()->

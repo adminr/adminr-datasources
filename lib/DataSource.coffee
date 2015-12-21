@@ -60,7 +60,6 @@ class DataSource
         @setAuthorizationToken(response.data.token,sessionOnly)
         resolve(response)
       ).catch((error)->
-        console.log('error',error)
         reject(error)
       )
     )
