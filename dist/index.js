@@ -190,7 +190,7 @@ module.exports = {
 
 
 },{}],4:[function(require,module,exports){
-var Injector, Resource, contentRange;
+var Injector, Resource, ResourceContainer, contentRange;
 
 Injector = require('./Injector.coffee');
 
@@ -207,18 +207,11 @@ Resource = (function() {
     methods = ['get', 'save', 'query', 'remove', 'delete'];
     methods.forEach((function(_this) {
       return function(method) {
-        return _this[method] = function(args) {
-          var results;
-          results = this.resource()[method](args, function(data, headers) {
-            var range;
-            range = headers('Content-Range');
-            if (range) {
-              return results.range = contentRange.parse(range);
-            }
-          }, function(error) {
-            return results.error = error;
-          });
-          return results;
+        return _this[method] = function(params) {
+          var container;
+          container = new ResourceContainer(this.resource(), method, params);
+          container.reload();
+          return container;
         };
       };
     })(this));
@@ -232,6 +225,69 @@ Resource = (function() {
   };
 
   return Resource;
+
+})();
+
+ResourceContainer = (function() {
+  ResourceContainer.prototype.data = null;
+
+  ResourceContainer.prototype.error = null;
+
+  ResourceContainer.prototype.loading = false;
+
+  ResourceContainer.prototype.$timeout = null;
+
+  function ResourceContainer(resource, method1, params) {
+    this.resource = resource;
+    this.method = method1;
+    if (params == null) {
+      params = {};
+    }
+    this.$timeout = Injector._$injector.get('$timeout');
+    this._scope = Injector._$injector.get('$rootScope').$new(true);
+    this._scope.params = params;
+    this.params = this._scope.params;
+    this._scope.$watch('params', (function(_this) {
+      return function() {
+        return _this.setNeedsReload();
+      };
+    })(this), true);
+  }
+
+  ResourceContainer.prototype.setNeedsReload = function() {
+    if (this._timeoutPromise) {
+      this.$timeout.cancel(this._timeoutPromise);
+    }
+    return this._timeoutPromise = this.$timeout((function(_this) {
+      return function() {
+        _this.reload();
+        return _this._timeoutPromise = null;
+      };
+    })(this), 200);
+  };
+
+  ResourceContainer.prototype.reload = function() {
+    this.loading = true;
+    this.error = null;
+    return this.resource[this.method](this._scope.params, (function(_this) {
+      return function(data, headers) {
+        var range;
+        _this.loading = false;
+        _this.data = data;
+        range = headers('Content-Range');
+        if (range) {
+          return _this.range = contentRange.parse(range);
+        }
+      };
+    })(this), (function(_this) {
+      return function(error) {
+        _this.loading = false;
+        return _this.error = error;
+      };
+    })(this));
+  };
+
+  return ResourceContainer;
 
 })();
 
