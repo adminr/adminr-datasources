@@ -30,7 +30,7 @@ class DataSource
       storage = @_getStorage(if sessionOnly then 'session' else 'local')
       storage[key] = token
 
-  addResource: (name,path,paramDefualts,actions,options = {})->
+  addResource: (name,path,paramDefaults,actions,options = {})->
     headers = {Authorization:()=>
       token = @getAuthorizationToken()
       if not token
@@ -45,7 +45,7 @@ class DataSource
       'remove': {method:'DELETE',headers:headers},
       'delete': {method:'DELETE',headers:headers}
     }
-    @resources[name] = new Resource(@,@url + path,paramDefualts,actions,options)
+    @resources[name] = new Resource(@,@url + path,paramDefaults,actions,options)
 
   removeResource: (name)->
     delete @resources[name]
