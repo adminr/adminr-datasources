@@ -10,16 +10,20 @@ class Resource
 
     methods.forEach((method)=>
       @[method] = (params)->
-        container = new ResourceContainer(@resource(),method,params)
+        container = new ResourceContainer(@,method,params)
         container.reload()
         return container
     )
 
+  logout:()->
+    @dataSource.logout()
 
   resource:()->
     if not @_resource
       @_resource = Injector._$injector.get('$resource')(@path,@paramDefaults,@actions,@options)
     return @_resource
+  getMethod:(method)->
+    return @resource()[method]
 
 
 class ResourceContainer
@@ -47,7 +51,7 @@ class ResourceContainer
   reload:()->
     @loading = yes
     @error = null
-    @resource[@method](@_scope.params,(data,headers)=>
+    @resource.getMethod(@method)(@_scope.params,(data,headers)=>
       @loading = no
       @data = data
       range = headers('Content-Range')
@@ -55,7 +59,10 @@ class ResourceContainer
         @range = contentRange.parse(range)
     ,(error)=>
       @loading = no
-      @error = error
+      if error.status in [401,429]
+        @resource.logout()
+      else
+        @error = error
     )
 
 

@@ -209,7 +209,7 @@ Resource = (function() {
       return function(method) {
         return _this[method] = function(params) {
           var container;
-          container = new ResourceContainer(this.resource(), method, params);
+          container = new ResourceContainer(this, method, params);
           container.reload();
           return container;
         };
@@ -217,11 +217,19 @@ Resource = (function() {
     })(this));
   }
 
+  Resource.prototype.logout = function() {
+    return this.dataSource.logout();
+  };
+
   Resource.prototype.resource = function() {
     if (!this._resource) {
       this._resource = Injector._$injector.get('$resource')(this.path, this.paramDefaults, this.actions, this.options);
     }
     return this._resource;
+  };
+
+  Resource.prototype.getMethod = function(method) {
+    return this.resource()[method];
   };
 
   return Resource;
@@ -269,7 +277,7 @@ ResourceContainer = (function() {
   ResourceContainer.prototype.reload = function() {
     this.loading = true;
     this.error = null;
-    return this.resource[this.method](this._scope.params, (function(_this) {
+    return this.resource.getMethod(this.method)(this._scope.params, (function(_this) {
       return function(data, headers) {
         var range;
         _this.loading = false;
@@ -281,8 +289,13 @@ ResourceContainer = (function() {
       };
     })(this), (function(_this) {
       return function(error) {
+        var ref;
         _this.loading = false;
-        return _this.error = error;
+        if ((ref = error.status) === 401 || ref === 429) {
+          return _this.resource.logout();
+        } else {
+          return _this.error = error;
+        }
       };
     })(this));
   };
