@@ -1,5 +1,6 @@
 Resource = require('./Resource.coffee')
 Injector = require('./Injector.coffee')
+contentRange = require('content-range')
 
 class DataSource
   authorizationEndpoint: '/authorize'
@@ -31,11 +32,13 @@ class DataSource
       storage[key] = token
 
   addResource: (name,path,paramDefaults,actions,options = {})->
-    headers = {Authorization:()=>
-      token = @getAuthorizationToken()
-      if not token
-        return null
-      return 'Bearer ' + token
+    resource = null
+    headers = {
+      Authorization:()=>
+        token = @getAuthorizationToken()
+        if not token
+          return null
+        return 'Bearer ' + token
     }
 
     actions = {
@@ -45,7 +48,8 @@ class DataSource
       'remove': {method:'DELETE',headers:headers},
       'delete': {method:'DELETE',headers:headers}
     }
-    @resources[name] = new Resource(@,@url + path,paramDefaults,actions,options)
+    resource = new Resource(@,@url + path,paramDefaults,actions,options)
+    @resources[name] = resource
 
   removeResource: (name)->
     delete @resources[name]

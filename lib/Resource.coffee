@@ -4,7 +4,7 @@ contentRange = require('content-range')
 
 
 class Resource
-  constructor:(@dataSource,@path,@paramDefualts,@actions,@options)->
+  constructor:(@dataSource,@path,@paramDefaults,@actions,@options)->
 
     methods = ['get','save','query','remove','delete']
 
@@ -18,26 +18,33 @@ class Resource
   logout:()->
     @dataSource.logout()
 
-  resource:()->
-    if not @_resource
-      @_resource = Injector._$injector.get('$resource')(@path,@paramDefaults,@actions,@options)
-    return @_resource
-  getMethod:(method)->
-    return @resource()[method]
+  getMethod:(container)->
+    actions = angular.copy(@actions)
+    actions[container.method].headers.Range = ()->
+      if container.params?.range
+        return contentRange.format(container.params.range)
+    resource = Injector._$injector.get('$resource')(@path,@paramDefaults,actions,@options)
+    return resource[container.method]
 
 
 class ResourceContainer
   data: null
   error: null
   loading: no
+  range: {name:'items'}
   $timeout: null
-  constructor:(@resource,@method,params = {})->
+  constructor:(@resource,@method,@params = {})->
     @$timeout = Injector._$injector.get('$timeout')
     @_scope = Injector._$injector.get('$rootScope').$new(yes)
-    @_scope.params = params
-    @params = @_scope.params
 
-    @_scope.$watch('params',()=>
+    @_scope.$watch(()=>
+      return @params
+    ,()=>
+      @setNeedsReload()
+    ,yes)
+    @_scope.$watch(()=>
+      @range
+    ,()=>
       @setNeedsReload()
     ,yes)
 
@@ -48,15 +55,15 @@ class ResourceContainer
       @reload()
       @_timeoutPromise = null
     ,200)
+
   reload:()->
     @loading = yes
     @error = null
-    @resource.getMethod(@method)(@_scope.params,(data,headers)=>
+    params = @getParams()
+    @resource.getMethod(@)(params,(data,headers)=>
       @loading = no
       @data = data
-      range = headers('Content-Range')
-      if range
-        @range = contentRange.parse(range)
+      @updateRange(params,headers('Content-Range'))
     ,(error)=>
       @loading = no
       if error.status in [401,429]
@@ -65,6 +72,34 @@ class ResourceContainer
         @error = error
     )
 
+  getParams:()->
+    params = angular.copy(@params)
+
+    if @resource.dataSource?.options?.useRangeHeaderOnly
+      return params
+
+    if @resource.dataSource?.options?.rangeToParamsHandler
+      return @resource.dataSource.options.rangeToParamsHandler(@range,params)
+    else
+
+      params.offset = @range.offset
+      params.limit = @range.limit
+
+      return params
+
+  updateRange:(params,rangeHeader)->
+    if rangeHeader
+      @range = contentRange.parse(rangeHeader)
+    else
+      @range = {offset:0}
+      if @data.count
+        @range.count = @data.count
+      if params.limit
+        @range.limit = params.limit
+      if params.offset
+        @range.offset = params.offset
+      if params.page
+        @range.offset = params.page * @range.limit
 
 
 module.exports = Resource

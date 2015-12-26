@@ -49,11 +49,13 @@ mod.provider('DataSources', function() {
 
 
 },{"./lib/DataSource.coffee":2,"./lib/Injector.coffee":3,"./lib/Resource.coffee":4}],2:[function(require,module,exports){
-var DataSource, Injector, Resource;
+var DataSource, Injector, Resource, contentRange;
 
 Resource = require('./Resource.coffee');
 
 Injector = require('./Injector.coffee');
+
+contentRange = require('content-range');
 
 DataSource = (function() {
   DataSource.prototype.authorizationEndpoint = '/authorize';
@@ -100,11 +102,12 @@ DataSource = (function() {
     }
   };
 
-  DataSource.prototype.addResource = function(name, path, paramDefualts, actions, options) {
-    var headers;
+  DataSource.prototype.addResource = function(name, path, paramDefaults, actions, options) {
+    var headers, resource;
     if (options == null) {
       options = {};
     }
+    resource = null;
     headers = {
       Authorization: (function(_this) {
         return function() {
@@ -140,7 +143,8 @@ DataSource = (function() {
         headers: headers
       }
     };
-    return this.resources[name] = new Resource(this, this.url + path, paramDefualts, actions, options);
+    resource = new Resource(this, this.url + path, paramDefaults, actions, options);
+    return this.resources[name] = resource;
   };
 
   DataSource.prototype.removeResource = function(name) {
@@ -183,7 +187,7 @@ DataSource = (function() {
 module.exports = DataSource;
 
 
-},{"./Injector.coffee":3,"./Resource.coffee":4}],3:[function(require,module,exports){
+},{"./Injector.coffee":3,"./Resource.coffee":4,"content-range":5}],3:[function(require,module,exports){
 module.exports = {
   _$injector: null
 };
@@ -197,12 +201,12 @@ Injector = require('./Injector.coffee');
 contentRange = require('content-range');
 
 Resource = (function() {
-  function Resource(dataSource, path, paramDefualts, actions, options) {
+  function Resource(dataSource, path, paramDefaults, actions1, options) {
     var methods;
     this.dataSource = dataSource;
     this.path = path;
-    this.paramDefualts = paramDefualts;
-    this.actions = actions;
+    this.paramDefaults = paramDefaults;
+    this.actions = actions1;
     this.options = options;
     methods = ['get', 'save', 'query', 'remove', 'delete'];
     methods.forEach((function(_this) {
@@ -221,15 +225,17 @@ Resource = (function() {
     return this.dataSource.logout();
   };
 
-  Resource.prototype.resource = function() {
-    if (!this._resource) {
-      this._resource = Injector._$injector.get('$resource')(this.path, this.paramDefaults, this.actions, this.options);
-    }
-    return this._resource;
-  };
-
-  Resource.prototype.getMethod = function(method) {
-    return this.resource()[method];
+  Resource.prototype.getMethod = function(container) {
+    var actions, resource;
+    actions = angular.copy(this.actions);
+    actions[container.method].headers.Range = function() {
+      var ref;
+      if ((ref = container.params) != null ? ref.range : void 0) {
+        return contentRange.format(container.params.range);
+      }
+    };
+    resource = Injector._$injector.get('$resource')(this.path, this.paramDefaults, actions, this.options);
+    return resource[container.method];
   };
 
   return Resource;
@@ -243,19 +249,32 @@ ResourceContainer = (function() {
 
   ResourceContainer.prototype.loading = false;
 
+  ResourceContainer.prototype.range = {
+    name: 'items'
+  };
+
   ResourceContainer.prototype.$timeout = null;
 
-  function ResourceContainer(resource, method1, params) {
-    this.resource = resource;
+  function ResourceContainer(resource1, method1, params1) {
+    this.resource = resource1;
     this.method = method1;
-    if (params == null) {
-      params = {};
-    }
+    this.params = params1 != null ? params1 : {};
     this.$timeout = Injector._$injector.get('$timeout');
     this._scope = Injector._$injector.get('$rootScope').$new(true);
-    this._scope.params = params;
-    this.params = this._scope.params;
-    this._scope.$watch('params', (function(_this) {
+    this._scope.$watch((function(_this) {
+      return function() {
+        return _this.params;
+      };
+    })(this), (function(_this) {
+      return function() {
+        return _this.setNeedsReload();
+      };
+    })(this), true);
+    this._scope.$watch((function(_this) {
+      return function() {
+        return _this.range;
+      };
+    })(this), (function(_this) {
       return function() {
         return _this.setNeedsReload();
       };
@@ -275,17 +294,15 @@ ResourceContainer = (function() {
   };
 
   ResourceContainer.prototype.reload = function() {
+    var params;
     this.loading = true;
     this.error = null;
-    return this.resource.getMethod(this.method)(this._scope.params, (function(_this) {
+    params = this.getParams();
+    return this.resource.getMethod(this)(params, (function(_this) {
       return function(data, headers) {
-        var range;
         _this.loading = false;
         _this.data = data;
-        range = headers('Content-Range');
-        if (range) {
-          return _this.range = contentRange.parse(range);
-        }
+        return _this.updateRange(params, headers('Content-Range'));
       };
     })(this), (function(_this) {
       return function(error) {
@@ -298,6 +315,43 @@ ResourceContainer = (function() {
         }
       };
     })(this));
+  };
+
+  ResourceContainer.prototype.getParams = function() {
+    var params, ref, ref1, ref2, ref3;
+    params = angular.copy(this.params);
+    if ((ref = this.resource.dataSource) != null ? (ref1 = ref.options) != null ? ref1.useRangeHeaderOnly : void 0 : void 0) {
+      return params;
+    }
+    if ((ref2 = this.resource.dataSource) != null ? (ref3 = ref2.options) != null ? ref3.rangeToParamsHandler : void 0 : void 0) {
+      return this.resource.dataSource.options.rangeToParamsHandler(this.range, params);
+    } else {
+      params.offset = this.range.offset;
+      params.limit = this.range.limit;
+      return params;
+    }
+  };
+
+  ResourceContainer.prototype.updateRange = function(params, rangeHeader) {
+    if (rangeHeader) {
+      return this.range = contentRange.parse(rangeHeader);
+    } else {
+      this.range = {
+        offset: 0
+      };
+      if (this.data.count) {
+        this.range.count = this.data.count;
+      }
+      if (params.limit) {
+        this.range.limit = params.limit;
+      }
+      if (params.offset) {
+        this.range.offset = params.offset;
+      }
+      if (params.page) {
+        return this.range.offset = params.page * this.range.limit;
+      }
+    }
   };
 
   return ResourceContainer;
