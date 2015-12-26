@@ -81,25 +81,27 @@ class ResourceContainer
     if @resource.dataSource?.options?.rangeToParamsHandler
       return @resource.dataSource.options.rangeToParamsHandler(@range,params)
     else
-
       params.offset = @range.offset
       params.limit = @range.limit
-
       return params
 
   updateRange:(params,rangeHeader)->
     if rangeHeader
       @range = contentRange.parse(rangeHeader)
     else
-      @range = {offset:0}
-      if @data.count
-        @range.count = @data.count
-      if params.limit
-        @range.limit = params.limit
-      if params.offset
-        @range.offset = params.offset
-      if params.page
-        @range.offset = params.page * @range.limit
+      if @resource.dataSource?.options?.updateRangeHandler
+        @resource.dataSource?.options?.updateRangeHandler(@range,@data,params)
+      else
+        @range = @range or {}
+        @range.offset = 0
+        if @data.count
+          @range.count = @data.count
+        if params.limit
+          @range.limit = params.limit
+        if params.offset
+          @range.offset = params.offset
+        if params.page
+          @range.offset = params.page * @range.limit
 
 
 module.exports = Resource

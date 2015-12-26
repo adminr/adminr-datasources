@@ -333,23 +333,27 @@ ResourceContainer = (function() {
   };
 
   ResourceContainer.prototype.updateRange = function(params, rangeHeader) {
+    var ref, ref1, ref2, ref3;
     if (rangeHeader) {
       return this.range = contentRange.parse(rangeHeader);
     } else {
-      this.range = {
-        offset: 0
-      };
-      if (this.data.count) {
-        this.range.count = this.data.count;
-      }
-      if (params.limit) {
-        this.range.limit = params.limit;
-      }
-      if (params.offset) {
-        this.range.offset = params.offset;
-      }
-      if (params.page) {
-        return this.range.offset = params.page * this.range.limit;
+      if ((ref = this.resource.dataSource) != null ? (ref1 = ref.options) != null ? ref1.updateRangeHandler : void 0 : void 0) {
+        return (ref2 = this.resource.dataSource) != null ? (ref3 = ref2.options) != null ? ref3.updateRangeHandler(this.range, this.data, params) : void 0 : void 0;
+      } else {
+        this.range = this.range || {};
+        this.range.offset = 0;
+        if (this.data.count) {
+          this.range.count = this.data.count;
+        }
+        if (params.limit) {
+          this.range.limit = params.limit;
+        }
+        if (params.offset) {
+          this.range.offset = params.offset;
+        }
+        if (params.page) {
+          return this.range.offset = params.page * this.range.limit;
+        }
       }
     }
   };
