@@ -31,24 +31,29 @@ class ResourceContainer
   data: null
   error: null
   loading: no
-  range: {name:'items'}
+  range: null
   $timeout: null
-  constructor:(@resource,@method,@params = {})->
+  constructor:(@resource,@method,params = {})->
+    @params = angular.copy(params)
+    @range = {name:'items'}
     @$timeout = Injector._$injector.get('$timeout')
     @_scope = Injector._$injector.get('$rootScope').$new(yes)
 
     @_scope.$watch(()=>
       return @params
-    ,()=>
-      @setNeedsReload()
+    ,(value, oldValue)=>
+      if value isnt oldValue
+        @setNeedsReload()
     ,yes)
     @_scope.$watch(()=>
-      @range
-    ,()=>
-      @setNeedsReload()
+      return @range
+    ,(value, oldValue)=>
+      if (value.offset or 0) isnt (oldValue.offset or 0) or (value.limit or 0) isnt (oldValue.limit or 0)
+        @setNeedsReload()
     ,yes)
 
   setNeedsReload:()->
+    console.log('setNeedsReload',@resource.path)
     if @_timeoutPromise
       @$timeout.cancel(@_timeoutPromise)
     @_timeoutPromise = @$timeout(()=>
@@ -57,6 +62,7 @@ class ResourceContainer
     ,200)
 
   reload:()->
+    console.log('reload',@resource.path)
     @loading = yes
     @error = null
     params = @getParams()
@@ -68,8 +74,7 @@ class ResourceContainer
       @loading = no
       if error.status in [401,429]
         @resource.logout()
-      else
-        @error = error
+      @error = error
     )
 
   getParams:()->
@@ -81,8 +86,8 @@ class ResourceContainer
     if @resource.dataSource?.options?.rangeToParamsHandler
       return @resource.dataSource.options.rangeToParamsHandler(@range,params)
     else
-      params.offset = @range.offset
-      params.limit = @range.limit
+      params.offset = @range.offset if @range.offset
+      params.limit = @range.limit if @range.limit
       return params
 
   updateRange:(params,rangeHeader)->

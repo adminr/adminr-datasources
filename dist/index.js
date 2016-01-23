@@ -249,16 +249,20 @@ ResourceContainer = (function() {
 
   ResourceContainer.prototype.loading = false;
 
-  ResourceContainer.prototype.range = {
-    name: 'items'
-  };
+  ResourceContainer.prototype.range = null;
 
   ResourceContainer.prototype.$timeout = null;
 
-  function ResourceContainer(resource1, method1, params1) {
+  function ResourceContainer(resource1, method1, params) {
     this.resource = resource1;
     this.method = method1;
-    this.params = params1 != null ? params1 : {};
+    if (params == null) {
+      params = {};
+    }
+    this.params = angular.copy(params);
+    this.range = {
+      name: 'items'
+    };
     this.$timeout = Injector._$injector.get('$timeout');
     this._scope = Injector._$injector.get('$rootScope').$new(true);
     this._scope.$watch((function(_this) {
@@ -266,8 +270,10 @@ ResourceContainer = (function() {
         return _this.params;
       };
     })(this), (function(_this) {
-      return function() {
-        return _this.setNeedsReload();
+      return function(value, oldValue) {
+        if (value !== oldValue) {
+          return _this.setNeedsReload();
+        }
       };
     })(this), true);
     this._scope.$watch((function(_this) {
@@ -275,13 +281,16 @@ ResourceContainer = (function() {
         return _this.range;
       };
     })(this), (function(_this) {
-      return function() {
-        return _this.setNeedsReload();
+      return function(value, oldValue) {
+        if ((value.offset || 0) !== (oldValue.offset || 0) || (value.limit || 0) !== (oldValue.limit || 0)) {
+          return _this.setNeedsReload();
+        }
       };
     })(this), true);
   }
 
   ResourceContainer.prototype.setNeedsReload = function() {
+    console.log('setNeedsReload', this.resource.path);
     if (this._timeoutPromise) {
       this.$timeout.cancel(this._timeoutPromise);
     }
@@ -295,6 +304,7 @@ ResourceContainer = (function() {
 
   ResourceContainer.prototype.reload = function() {
     var params;
+    console.log('reload', this.resource.path);
     this.loading = true;
     this.error = null;
     params = this.getParams();
@@ -309,10 +319,9 @@ ResourceContainer = (function() {
         var ref;
         _this.loading = false;
         if ((ref = error.status) === 401 || ref === 429) {
-          return _this.resource.logout();
-        } else {
-          return _this.error = error;
+          _this.resource.logout();
         }
+        return _this.error = error;
       };
     })(this));
   };
@@ -326,8 +335,12 @@ ResourceContainer = (function() {
     if ((ref2 = this.resource.dataSource) != null ? (ref3 = ref2.options) != null ? ref3.rangeToParamsHandler : void 0 : void 0) {
       return this.resource.dataSource.options.rangeToParamsHandler(this.range, params);
     } else {
-      params.offset = this.range.offset;
-      params.limit = this.range.limit;
+      if (this.range.offset) {
+        params.offset = this.range.offset;
+      }
+      if (this.range.limit) {
+        params.limit = this.range.limit;
+      }
       return params;
     }
   };

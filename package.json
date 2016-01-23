@@ -4,10 +4,16 @@
   "devDependencies": {
     "browserify": "^11.0.1",
     "browserify-ngannotate": "^1.0.1",
-    "coffeeify": "^1.1.0"
+    "coffeeify": "^1.1.0",
+    "nodemon": "^1.8.1",
+    "parallelshell": "^2.0.0",
+    "browser-sync": "^2.11.1"
   },
   "scripts": {
-    "build": "mkdir dist;browserify -t coffeeify -t [ browserify-ngannotate --x .coffee ] index.coffee -o dist/index.js"
+    "build": "mkdir dist;browserify -t coffeeify -t [ browserify-ngannotate --x .coffee ] index.coffee -o dist/index.js",
+    "serve-example": "./node_modules/.bin/browser-sync start --server --startPath example --files \"dist/*,example/*\" --reload-delay 500",
+    "watch": "./node_modules/.bin/nodemon -x 'npm run build' -e html,coffee --ignore dist --ignore example",
+    "example": "./node_modules/.bin/parallelshell 'npm run watch' 'npm run serve-example'"
   },
   "dependencies": {
     "content-range": "^0.2.0"

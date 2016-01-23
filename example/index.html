@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="adminr-core-test">
+<head>
+    <meta charset="UTF-8">
+    <title>Adminr-login example</title>
+
+    <script src="../bower_components/angular/angular.js" type="application/javascript"></script>
+    <script src="../bower_components/angular-resource/angular-resource.js" type="application/javascript"></script>
+    <script src="../bower_components/ngstorage/ngStorage.js" type="application/javascript"></script>
+    <script src="../dist/index.js" type="application/javascript"></script>
+    <script src="index.js" type="application/javascript"></script>
+    <style ></style>
+</head>
+<body ng-controller="TestCtrl">
+
+<p>
+    unauthorized resource: {{unauthorizedResource.error.data}} (status: {{unauthorizedResource.error.status}})
+</p>
+<p>
+    users: {{users.range}}
+    <ul>
+        <li ng-repeat="user in users.data.items">#{{user.id}} {{user.username}}</li>
+    </ul>
+    limit: <input type="number" ng-model="users.range.limit" /> <br />
+    offset: <input type="number" ng-model="users.range.offset" />
+</p>
+
+</body>
+</html>
