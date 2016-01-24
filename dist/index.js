@@ -9,7 +9,7 @@ DataSource = require('./lib/DataSource.coffee');
 
 Injector = require('./lib/Injector.coffee');
 
-mod.provider('DataSources', function() {
+mod.provider('AdminrDataSources', function() {
   var DataSourcesProvider;
   DataSourcesProvider = (function() {
     function DataSourcesProvider() {}
@@ -49,13 +49,11 @@ mod.provider('DataSources', function() {
 
 
 },{"./lib/DataSource.coffee":2,"./lib/Injector.coffee":3,"./lib/Resource.coffee":4}],2:[function(require,module,exports){
-var DataSource, Injector, Resource, contentRange;
+var DataSource, Injector, Resource;
 
 Resource = require('./Resource.coffee');
 
 Injector = require('./Injector.coffee');
-
-contentRange = require('content-range');
 
 DataSource = (function() {
   DataSource.prototype.authorizationEndpoint = '/authorize';
@@ -187,7 +185,7 @@ DataSource = (function() {
 module.exports = DataSource;
 
 
-},{"./Injector.coffee":3,"./Resource.coffee":4,"content-range":5}],3:[function(require,module,exports){
+},{"./Injector.coffee":3,"./Resource.coffee":4}],3:[function(require,module,exports){
 module.exports = {
   _$injector: null
 };

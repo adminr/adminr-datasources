@@ -1,6 +1,5 @@
 Resource = require('./Resource.coffee')
 Injector = require('./Injector.coffee')
-contentRange = require('content-range')
 
 class DataSource
   authorizationEndpoint: '/authorize'

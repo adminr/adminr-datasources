@@ -5,7 +5,7 @@ DataSource = require('./lib/DataSource.coffee')
 
 Injector = require('./lib/Injector.coffee')
 
-mod.provider('DataSources',()->
+mod.provider('AdminrDataSources',()->
 
   class DataSourcesProvider
     dataSources: {}
