@@ -18,7 +18,8 @@
     "node_modules",
     "bower_components",
     "test",
-    "tests"
+    "tests",
+    "example"
   ],
   "dependencies": {
     "angular-resource": "~1.4.4",
