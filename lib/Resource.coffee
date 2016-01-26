@@ -53,7 +53,6 @@ class ResourceContainer
     ,yes)
 
   setNeedsReload:()->
-    console.log('setNeedsReload',@resource.path)
     if @_timeoutPromise
       @$timeout.cancel(@_timeoutPromise)
     @_timeoutPromise = @$timeout(()=>
@@ -62,7 +61,6 @@ class ResourceContainer
     ,200)
 
   reload:()->
-    console.log('reload',@resource.path)
     @loading = yes
     @error = null
     params = @getParams()

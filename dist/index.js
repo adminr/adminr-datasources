@@ -288,7 +288,6 @@ ResourceContainer = (function() {
   }
 
   ResourceContainer.prototype.setNeedsReload = function() {
-    console.log('setNeedsReload', this.resource.path);
     if (this._timeoutPromise) {
       this.$timeout.cancel(this._timeoutPromise);
     }
@@ -302,7 +301,6 @@ ResourceContainer = (function() {
 
   ResourceContainer.prototype.reload = function() {
     var params;
-    console.log('reload', this.resource.path);
     this.loading = true;
     this.error = null;
     params = this.getParams();

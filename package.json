@@ -10,7 +10,7 @@
     "browser-sync": "^2.11.1"
   },
   "scripts": {
-    "build": "mkdir dist;browserify -t coffeeify -t [ browserify-ngannotate --x .coffee ] index.coffee -o dist/index.js",
+    "build": "[ -d dist ] || mkdir dist;browserify -t coffeeify -t [ browserify-ngannotate --x .coffee ] index.coffee -o dist/index.js",
     "serve-example": "./node_modules/.bin/browser-sync start --server --startPath example --files \"dist/*,example/*\" --reload-delay 500",
     "watch": "./node_modules/.bin/nodemon -x 'npm run build' -e html,coffee --ignore dist --ignore example",
     "example": "./node_modules/.bin/parallelshell 'npm run watch' 'npm run serve-example'"
