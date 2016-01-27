@@ -20,7 +20,7 @@ class Resource
   getMethod:(container)->
     actions = angular.copy(@actions)
     actions[container.method].headers.Range = ()=>
-      if container.range and @supportsRangeHeader()
+      if @supportsRangeHeader()
         rangeFrom = (container.range.offset or 0)
         rangeTo = if container.range.limit then ((container.range.offset or 0) + container.range.limit - 1) else '*'
         range = "items=" + rangeFrom + '-' + rangeTo
@@ -84,9 +84,8 @@ class ResourceContainer
   getParams:()->
     params = angular.copy(@params)
 
-    if @resource.dataSource?.options?.useRangeHeaderOnly
+    if @resource.supportsRangeHeader()
       return params
-
     if @resource.dataSource?.options?.rangeToParamsHandler
       return @resource.dataSource.options.rangeToParamsHandler(@range,params)
     else
@@ -96,7 +95,13 @@ class ResourceContainer
 
   updateRange:(params,rangeHeader)->
     if rangeHeader
-      @range = contentRange.parse(rangeHeader)
+      range = contentRange.parse(rangeHeader)
+      @range.offset = range.start
+      @range.end = range.end
+      limit = range.end - range.start + 1
+      if @range.limit < limit
+        @range.limit = limit
+      @range.count = range.count
     else
       if @resource.dataSource?.options?.updateRangeHandler
         @resource.dataSource?.options?.updateRangeHandler(@range,@data,params)

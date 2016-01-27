@@ -233,7 +233,7 @@ Resource = (function() {
     actions[container.method].headers.Range = (function(_this) {
       return function() {
         var range, rangeFrom, rangeTo;
-        if (container.range && _this.supportsRangeHeader()) {
+        if (_this.supportsRangeHeader()) {
           rangeFrom = container.range.offset || 0;
           rangeTo = container.range.limit ? (container.range.offset || 0) + container.range.limit - 1 : '*';
           range = "items=" + rangeFrom + '-' + rangeTo;
@@ -336,12 +336,12 @@ ResourceContainer = (function() {
   };
 
   ResourceContainer.prototype.getParams = function() {
-    var params, ref, ref1, ref2, ref3;
+    var params, ref, ref1;
     params = angular.copy(this.params);
-    if ((ref = this.resource.dataSource) != null ? (ref1 = ref.options) != null ? ref1.useRangeHeaderOnly : void 0 : void 0) {
+    if (this.resource.supportsRangeHeader()) {
       return params;
     }
-    if ((ref2 = this.resource.dataSource) != null ? (ref3 = ref2.options) != null ? ref3.rangeToParamsHandler : void 0 : void 0) {
+    if ((ref = this.resource.dataSource) != null ? (ref1 = ref.options) != null ? ref1.rangeToParamsHandler : void 0 : void 0) {
       return this.resource.dataSource.options.rangeToParamsHandler(this.range, params);
     } else {
       if (this.range.offset) {
@@ -355,9 +355,16 @@ ResourceContainer = (function() {
   };
 
   ResourceContainer.prototype.updateRange = function(params, rangeHeader) {
-    var ref, ref1, ref2, ref3;
+    var limit, range, ref, ref1, ref2, ref3;
     if (rangeHeader) {
-      return this.range = contentRange.parse(rangeHeader);
+      range = contentRange.parse(rangeHeader);
+      this.range.offset = range.start;
+      this.range.end = range.end;
+      limit = range.end - range.start + 1;
+      if (this.range.limit < limit) {
+        this.range.limit = limit;
+      }
+      return this.range.count = range.count;
     } else {
       if ((ref = this.resource.dataSource) != null ? (ref1 = ref.options) != null ? ref1.updateRangeHandler : void 0 : void 0) {
         return (ref2 = this.resource.dataSource) != null ? (ref3 = ref2.options) != null ? ref3.updateRangeHandler(this.range, this.data, params) : void 0 : void 0;
