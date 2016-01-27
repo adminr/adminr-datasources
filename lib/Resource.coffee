@@ -24,7 +24,6 @@ class Resource
         rangeFrom = (container.range.offset or 0)
         rangeTo = if container.range.limit then ((container.range.offset or 0) + container.range.limit - 1) else '*'
         range = "items=" + rangeFrom + '-' + rangeTo
-        console.log(range)
         return range
     resource = Injector._$injector.get('$resource')(@path,@paramDefaults,actions,@options)
     return resource[container.method]
@@ -70,9 +69,6 @@ class ResourceContainer
     @loading = yes
     @error = null
     params = @getParams()
-
-    if @resource.supportsRangeHeader()
-      range = 'items='
 
     @resource.getMethod(@)(params,(data,headers)=>
       @loading = no

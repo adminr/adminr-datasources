@@ -237,7 +237,6 @@ Resource = (function() {
           rangeFrom = container.range.offset || 0;
           rangeTo = container.range.limit ? (container.range.offset || 0) + container.range.limit - 1 : '*';
           range = "items=" + rangeFrom + '-' + rangeTo;
-          console.log(range);
           return range;
         }
       };
@@ -314,13 +313,10 @@ ResourceContainer = (function() {
   };
 
   ResourceContainer.prototype.reload = function() {
-    var params, range;
+    var params;
     this.loading = true;
     this.error = null;
     params = this.getParams();
-    if (this.resource.supportsRangeHeader()) {
-      range = 'items=';
-    }
     return this.resource.getMethod(this)(params, (function(_this) {
       return function(data, headers) {
         _this.loading = false;
