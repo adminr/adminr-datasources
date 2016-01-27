@@ -145,6 +145,10 @@ DataSource = (function() {
     return this.resources[name] = resource;
   };
 
+  DataSource.prototype.supportsRangeHeader = function() {
+    return this.options.supportsRangeHeader;
+  };
+
   DataSource.prototype.removeResource = function(name) {
     return delete this.resources[name];
   };
@@ -226,14 +230,24 @@ Resource = (function() {
   Resource.prototype.getMethod = function(container) {
     var actions, resource;
     actions = angular.copy(this.actions);
-    actions[container.method].headers.Range = function() {
-      var ref;
-      if ((ref = container.params) != null ? ref.range : void 0) {
-        return contentRange.format(container.params.range);
-      }
-    };
+    actions[container.method].headers.Range = (function(_this) {
+      return function() {
+        var range, rangeFrom, rangeTo;
+        if (container.range && _this.supportsRangeHeader()) {
+          rangeFrom = container.range.offset || 0;
+          rangeTo = container.range.limit ? (container.range.offset || 0) + container.range.limit - 1 : '*';
+          range = "items=" + rangeFrom + '-' + rangeTo;
+          console.log(range);
+          return range;
+        }
+      };
+    })(this);
     resource = Injector._$injector.get('$resource')(this.path, this.paramDefaults, actions, this.options);
     return resource[container.method];
+  };
+
+  Resource.prototype.supportsRangeHeader = function() {
+    return this.dataSource.supportsRangeHeader();
   };
 
   return Resource;
@@ -259,7 +273,7 @@ ResourceContainer = (function() {
     }
     this.params = angular.copy(params);
     this.range = {
-      name: 'items'
+      unit: 'items'
     };
     this.$timeout = Injector._$injector.get('$timeout');
     this._scope = Injector._$injector.get('$rootScope').$new(true);
@@ -300,10 +314,13 @@ ResourceContainer = (function() {
   };
 
   ResourceContainer.prototype.reload = function() {
-    var params;
+    var params, range;
     this.loading = true;
     this.error = null;
     params = this.getParams();
+    if (this.resource.supportsRangeHeader()) {
+      range = 'items=';
+    }
     return this.resource.getMethod(this)(params, (function(_this) {
       return function(data, headers) {
         _this.loading = false;

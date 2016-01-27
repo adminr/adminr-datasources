@@ -2,7 +2,6 @@ Injector = require('./Injector.coffee')
 contentRange = require('content-range')
 
 
-
 class Resource
   constructor:(@dataSource,@path,@paramDefaults,@actions,@options)->
 
@@ -20,11 +19,18 @@ class Resource
 
   getMethod:(container)->
     actions = angular.copy(@actions)
-    actions[container.method].headers.Range = ()->
-      if container.params?.range
-        return contentRange.format(container.params.range)
+    actions[container.method].headers.Range = ()=>
+      if container.range and @supportsRangeHeader()
+        rangeFrom = (container.range.offset or 0)
+        rangeTo = if container.range.limit then ((container.range.offset or 0) + container.range.limit - 1) else '*'
+        range = "items=" + rangeFrom + '-' + rangeTo
+        console.log(range)
+        return range
     resource = Injector._$injector.get('$resource')(@path,@paramDefaults,actions,@options)
     return resource[container.method]
+
+  supportsRangeHeader:()->
+    return @dataSource.supportsRangeHeader()
 
 
 class ResourceContainer
@@ -35,7 +41,7 @@ class ResourceContainer
   $timeout: null
   constructor:(@resource,@method,params = {})->
     @params = angular.copy(params)
-    @range = {name:'items'}
+    @range = {unit:'items'}
     @$timeout = Injector._$injector.get('$timeout')
     @_scope = Injector._$injector.get('$rootScope').$new(yes)
 
@@ -64,6 +70,10 @@ class ResourceContainer
     @loading = yes
     @error = null
     params = @getParams()
+
+    if @resource.supportsRangeHeader()
+      range = 'items='
+
     @resource.getMethod(@)(params,(data,headers)=>
       @loading = no
       @data = data

@@ -19,7 +19,7 @@
 <p>
     users: {{users.range}}
     <ul>
-        <li ng-repeat="user in users.data.items">#{{user.id}} {{user.username}}</li>
+        <li ng-repeat="user in users.data">#{{user.id}} {{user.username}}</li>
     </ul>
     limit: <input type="number" ng-model="users.range.limit" /> <br />
     offset: <input type="number" ng-model="users.range.offset" />
