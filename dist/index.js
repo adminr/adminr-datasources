@@ -339,6 +339,8 @@ ResourceContainer = (function() {
     var params, ref, ref1;
     params = angular.copy(this.params);
     if (this.resource.supportsRangeHeader()) {
+      params.limit = void 0;
+      params.offset = void 0;
       return params;
     }
     if ((ref = this.resource.dataSource) != null ? (ref1 = ref.options) != null ? ref1.rangeToParamsHandler : void 0 : void 0) {
@@ -361,7 +363,10 @@ ResourceContainer = (function() {
       this.range.offset = range.start;
       this.range.end = range.end;
       limit = range.end - range.start + 1;
-      if (this.range.limit < limit) {
+      if (params.limit) {
+        this.range.limit = params.limit;
+      }
+      if (!this.range.limit || this.range.limit < limit) {
         this.range.limit = limit;
       }
       return this.range.count = range.count;

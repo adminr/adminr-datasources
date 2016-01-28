@@ -85,6 +85,8 @@ class ResourceContainer
     params = angular.copy(@params)
 
     if @resource.supportsRangeHeader()
+      params.limit = undefined
+      params.offset = undefined
       return params
     if @resource.dataSource?.options?.rangeToParamsHandler
       return @resource.dataSource.options.rangeToParamsHandler(@range,params)
@@ -99,7 +101,9 @@ class ResourceContainer
       @range.offset = range.start
       @range.end = range.end
       limit = range.end - range.start + 1
-      if @range.limit < limit
+      if params.limit
+        @range.limit = params.limit
+      if not @range.limit or @range.limit < limit
         @range.limit = limit
       @range.count = range.count
     else
