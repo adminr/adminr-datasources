@@ -42,7 +42,9 @@ class DataSource
 
     actions = {
       'get':    {method:'GET',headers:headers},
-      'save':   {method:'POST',headers:headers},
+      'save':   {method:'...',headers:headers},
+      'post': {method:'POST',headers:headers},
+      'put': {method:'PUT',headers:headers},
       'query':  {method:'GET', isArray:true,headers:headers},
       'remove': {method:'DELETE',headers:headers},
       'delete': {method:'DELETE',headers:headers}

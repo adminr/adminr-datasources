@@ -5,7 +5,7 @@ contentRange = require('content-range')
 class Resource
   constructor:(@dataSource,@path,@paramDefaults,@actions,@options)->
 
-    methods = ['get','save','query','remove','delete']
+    methods = ['get','save','update','query','remove','delete']
 
     methods.forEach((method)=>
       @[method] = (params)->
@@ -14,19 +14,37 @@ class Resource
         return container
     )
 
+  create:(params)->
+    container = new ResourceContainer(@,'create',params)
+    container.create()
+    return container
+
   logout:()->
     @dataSource.logout()
 
   getMethod:(container)->
-    actions = angular.copy(@actions)
-    actions[container.method].headers.Range = ()=>
-      if @supportsRangeHeader()
-        rangeFrom = (container.range.offset or 0)
-        rangeTo = if container.range.limit then ((container.range.offset or 0) + container.range.limit - 1) else '*'
-        range = "items=" + rangeFrom + '-' + rangeTo
-        return range
-    resource = Injector._$injector.get('$resource')(@path,@paramDefaults,actions,@options)
+    resource = @getResource(container)
     return resource[container.method]
+
+  getResource:(container)->
+    actions = angular.copy(@actions)
+
+    if container and actions?[container.method]
+      actions[container.method].headers.Range = ()=>
+        if @supportsRangeHeader()
+          rangeFrom = (container.range.offset or 0)
+          rangeTo = if container.range.limit then ((container.range.offset or 0) + container.range.limit - 1) else '*'
+          range = "items=" + rangeFrom + '-' + rangeTo
+          return range
+    resource = Injector._$injector.get('$resource')(@path,@paramDefaults,actions,@options)
+
+    resource.prototype.$save = ()->
+      if not @id
+        return @$post()
+      else
+        return @$put()
+
+    return resource
 
   supportsRangeHeader:()->
     return @dataSource.supportsRangeHeader()
@@ -70,9 +88,9 @@ class ResourceContainer
     @error = null
     params = @getParams()
 
-    @resource.getMethod(@)(params,(data,headers)=>
+    @data = @resource.getMethod(@)(params,(data,headers)=>
       @loading = no
-      @data = data
+#      @data = data
       @updateRange(params,headers('Content-Range'))
     ,(error)=>
       @loading = no
@@ -80,6 +98,22 @@ class ResourceContainer
         @resource.logout()
       @error = error
     )
+
+  create:()->
+    params = @getParams()
+    res = @resource.getResource(@)
+    @data = new res(params)
+
+
+  deleteItem:(item)->
+    item.$delete().then(()=>
+      @reload()
+    )
+
+  $save:()->
+    @data.$save()
+  $delete:()->
+    @data.$delete()
 
   getParams:()->
     params = angular.copy(@params)

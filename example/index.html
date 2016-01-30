@@ -19,10 +19,16 @@
 <p>
     users: {{users.range}}
     <ul>
-        <li ng-repeat="user in users.data">#{{user.id}} {{user.username}}</li>
+        <li ng-repeat="user in users.data">#{{user.id}} {{user.username}} <a href="#" ng-click="users.deleteItem(user)">x</a></li>
     </ul>
+<button ng-click="users.reload()">reload</button><br />
     limit: <input type="number" ng-model="users.range.limit" /> <br />
     offset: <input type="number" ng-model="users.range.offset" />
+
+
+<form>
+    <input type="text" ng-model="user.data.username"  /> <button ng-click="saveUser()">save</button>
+</form>
 </p>
 
 </body>

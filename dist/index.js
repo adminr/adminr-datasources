@@ -124,7 +124,15 @@ DataSource = (function() {
         headers: headers
       },
       'save': {
+        method: '...',
+        headers: headers
+      },
+      'post': {
         method: 'POST',
+        headers: headers
+      },
+      'put': {
+        method: 'PUT',
         headers: headers
       },
       'query': {
@@ -210,7 +218,7 @@ Resource = (function() {
     this.paramDefaults = paramDefaults;
     this.actions = actions1;
     this.options = options;
-    methods = ['get', 'save', 'query', 'remove', 'delete'];
+    methods = ['get', 'save', 'update', 'query', 'remove', 'delete'];
     methods.forEach((function(_this) {
       return function(method) {
         return _this[method] = function(params) {
@@ -223,26 +231,48 @@ Resource = (function() {
     })(this));
   }
 
+  Resource.prototype.create = function(params) {
+    var container;
+    container = new ResourceContainer(this, 'create', params);
+    container.create();
+    return container;
+  };
+
   Resource.prototype.logout = function() {
     return this.dataSource.logout();
   };
 
   Resource.prototype.getMethod = function(container) {
+    var resource;
+    resource = this.getResource(container);
+    return resource[container.method];
+  };
+
+  Resource.prototype.getResource = function(container) {
     var actions, resource;
     actions = angular.copy(this.actions);
-    actions[container.method].headers.Range = (function(_this) {
-      return function() {
-        var range, rangeFrom, rangeTo;
-        if (_this.supportsRangeHeader()) {
-          rangeFrom = container.range.offset || 0;
-          rangeTo = container.range.limit ? (container.range.offset || 0) + container.range.limit - 1 : '*';
-          range = "items=" + rangeFrom + '-' + rangeTo;
-          return range;
-        }
-      };
-    })(this);
+    if (container && (actions != null ? actions[container.method] : void 0)) {
+      actions[container.method].headers.Range = (function(_this) {
+        return function() {
+          var range, rangeFrom, rangeTo;
+          if (_this.supportsRangeHeader()) {
+            rangeFrom = container.range.offset || 0;
+            rangeTo = container.range.limit ? (container.range.offset || 0) + container.range.limit - 1 : '*';
+            range = "items=" + rangeFrom + '-' + rangeTo;
+            return range;
+          }
+        };
+      })(this);
+    }
     resource = Injector._$injector.get('$resource')(this.path, this.paramDefaults, actions, this.options);
-    return resource[container.method];
+    resource.prototype.$save = function() {
+      if (!this.id) {
+        return this.$post();
+      } else {
+        return this.$put();
+      }
+    };
+    return resource;
   };
 
   Resource.prototype.supportsRangeHeader = function() {
@@ -317,10 +347,9 @@ ResourceContainer = (function() {
     this.loading = true;
     this.error = null;
     params = this.getParams();
-    return this.resource.getMethod(this)(params, (function(_this) {
+    return this.data = this.resource.getMethod(this)(params, (function(_this) {
       return function(data, headers) {
         _this.loading = false;
-        _this.data = data;
         return _this.updateRange(params, headers('Content-Range'));
       };
     })(this), (function(_this) {
@@ -333,6 +362,29 @@ ResourceContainer = (function() {
         return _this.error = error;
       };
     })(this));
+  };
+
+  ResourceContainer.prototype.create = function() {
+    var params, res;
+    params = this.getParams();
+    res = this.resource.getResource(this);
+    return this.data = new res(params);
+  };
+
+  ResourceContainer.prototype.deleteItem = function(item) {
+    return item.$delete().then((function(_this) {
+      return function() {
+        return _this.reload();
+      };
+    })(this));
+  };
+
+  ResourceContainer.prototype.$save = function() {
+    return this.data.$save();
+  };
+
+  ResourceContainer.prototype.$delete = function() {
+    return this.data.$delete();
   };
 
   ResourceContainer.prototype.getParams = function() {
