@@ -288,7 +288,7 @@ ResourceContainer = (function() {
 
   ResourceContainer.prototype.error = null;
 
-  ResourceContainer.prototype.loading = false;
+  ResourceContainer.prototype.resolved = true;
 
   ResourceContainer.prototype.range = null;
 
@@ -344,18 +344,18 @@ ResourceContainer = (function() {
 
   ResourceContainer.prototype.reload = function() {
     var params;
-    this.loading = true;
+    this.resolved = false;
     this.error = null;
     params = this.getParams();
     return this.data = this.resource.getMethod(this)(params, (function(_this) {
       return function(data, headers) {
-        _this.loading = false;
+        _this.resolved = true;
         return _this.updateRange(params, headers('Content-Range'));
       };
     })(this), (function(_this) {
       return function(error) {
         var ref;
-        _this.loading = false;
+        _this.resolved = true;
         if ((ref = error.status) === 401 || ref === 429) {
           _this.resource.logout();
         }
@@ -372,19 +372,29 @@ ResourceContainer = (function() {
   };
 
   ResourceContainer.prototype.deleteItem = function(item) {
+    this.resolved = false;
     return item.$delete().then((function(_this) {
       return function() {
+        _this.resolved = true;
         return _this.reload();
       };
     })(this));
   };
 
   ResourceContainer.prototype.$save = function() {
-    return this.data.$save();
+    this.resolved = false;
+    return this.data.$save().then((function(_this) {
+      return function() {
+        return _this.resolved = true;
+      };
+    })(this));
   };
 
   ResourceContainer.prototype.$delete = function() {
-    return this.data.$delete();
+    this.resolved = false;
+    return this.data.$delete().then(function() {
+      return this.resolved = true;
+    });
   };
 
   ResourceContainer.prototype.getParams = function() {

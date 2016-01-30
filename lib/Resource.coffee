@@ -53,7 +53,7 @@ class Resource
 class ResourceContainer
   data: null
   error: null
-  loading: no
+  resolved: yes
   range: null
   $timeout: null
   constructor:(@resource,@method,params = {})->
@@ -84,16 +84,16 @@ class ResourceContainer
     ,200)
 
   reload:()->
-    @loading = yes
+    @resolved = no
     @error = null
     params = @getParams()
 
     @data = @resource.getMethod(@)(params,(data,headers)=>
-      @loading = no
+      @resolved = yes
 #      @data = data
       @updateRange(params,headers('Content-Range'))
     ,(error)=>
-      @loading = no
+      @resolved = yes
       if error.status in [401,429]
         @resource.logout()
       @error = error
@@ -106,14 +106,22 @@ class ResourceContainer
 
 
   deleteItem:(item)->
+    @resolved = no
     item.$delete().then(()=>
+      @resolved = yes
       @reload()
     )
 
   $save:()->
-    @data.$save()
+    @resolved = no
+    @data.$save().then(()=>
+      @resolved = yes
+    )
   $delete:()->
-    @data.$delete()
+    @resolved = no
+    @data.$delete().then(()->
+      @resolved = yes
+    )
 
   getParams:()->
     params = angular.copy(@params)

@@ -17,7 +17,7 @@
     unauthorized resource: {{unauthorizedResource.error.data}} (status: {{unauthorizedResource.error.status}})
 </p>
 <p>
-    users: {{users.range}}
+    users: {{users.range}} (resolved: {{users.resolved}})
     <ul>
         <li ng-repeat="user in users.data">#{{user.id}} {{user.username}} <a href="#" ng-click="users.deleteItem(user)">x</a></li>
     </ul>
@@ -27,7 +27,7 @@
 
 
 <form>
-    <input type="text" ng-model="user.data.username"  /> <button ng-click="saveUser()">save</button>
+    <input type="text" ng-model="user.data.username"  /> <button ng-click="saveUser()">save</button>{{user.resolved}}
 </form>
 </p>
 
