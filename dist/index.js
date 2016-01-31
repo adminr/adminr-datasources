@@ -224,7 +224,7 @@ Resource = (function() {
         return _this[method] = function(params) {
           var container;
           container = new ResourceContainer(this, method, params);
-          container.reload();
+          container.setNeedsReload();
           return container;
         };
       };
@@ -323,7 +323,7 @@ ResourceContainer = (function() {
       };
     })(this), (function(_this) {
       return function(value, oldValue) {
-        if ((value.offset || 0) !== (oldValue.offset || 0) || (value.limit || 0) !== (oldValue.limit || 0)) {
+        if ((value.offset || 0) !== (oldValue.offset || 0) || ((value.limit || 0) !== (oldValue.limit || 0) && oldValue.limit)) {
           return _this.setNeedsReload();
         }
       };
@@ -331,6 +331,7 @@ ResourceContainer = (function() {
   }
 
   ResourceContainer.prototype.setNeedsReload = function() {
+    console.log('needs reload', this._timeoutPromise);
     if (this._timeoutPromise) {
       this.$timeout.cancel(this._timeoutPromise);
     }
@@ -344,6 +345,7 @@ ResourceContainer = (function() {
 
   ResourceContainer.prototype.reload = function() {
     var params;
+    console.log('reload');
     this.resolved = false;
     this.error = null;
     params = this.getParams();

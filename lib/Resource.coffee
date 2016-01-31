@@ -10,7 +10,7 @@ class Resource
     methods.forEach((method)=>
       @[method] = (params)->
         container = new ResourceContainer(@,method,params)
-        container.reload()
+        container.setNeedsReload()
         return container
     )
 
@@ -71,11 +71,12 @@ class ResourceContainer
     @_scope.$watch(()=>
       return @range
     ,(value, oldValue)=>
-      if (value.offset or 0) isnt (oldValue.offset or 0) or (value.limit or 0) isnt (oldValue.limit or 0)
+      if (value.offset or 0) isnt (oldValue.offset or 0) or ((value.limit or 0) isnt (oldValue.limit or 0) and oldValue.limit)
         @setNeedsReload()
     ,yes)
 
   setNeedsReload:()->
+    console.log('needs reload',@_timeoutPromise)
     if @_timeoutPromise
       @$timeout.cancel(@_timeoutPromise)
     @_timeoutPromise = @$timeout(()=>
@@ -84,6 +85,7 @@ class ResourceContainer
     ,200)
 
   reload:()->
+    console.log('reload')
     @resolved = no
     @error = null
     params = @getParams()
