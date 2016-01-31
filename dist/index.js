@@ -331,7 +331,6 @@ ResourceContainer = (function() {
   }
 
   ResourceContainer.prototype.setNeedsReload = function() {
-    console.log('needs reload', this._timeoutPromise);
     if (this._timeoutPromise) {
       this.$timeout.cancel(this._timeoutPromise);
     }
@@ -344,14 +343,14 @@ ResourceContainer = (function() {
   };
 
   ResourceContainer.prototype.reload = function() {
-    var params;
-    console.log('reload');
+    var newData, params;
     this.resolved = false;
     this.error = null;
     params = this.getParams();
-    return this.data = this.resource.getMethod(this)(params, (function(_this) {
+    return newData = this.resource.getMethod(this)(params, (function(_this) {
       return function(data, headers) {
         _this.resolved = true;
+        _this.data = newData;
         return _this.updateRange(params, headers('Content-Range'));
       };
     })(this), (function(_this) {

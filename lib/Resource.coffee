@@ -76,7 +76,6 @@ class ResourceContainer
     ,yes)
 
   setNeedsReload:()->
-    console.log('needs reload',@_timeoutPromise)
     if @_timeoutPromise
       @$timeout.cancel(@_timeoutPromise)
     @_timeoutPromise = @$timeout(()=>
@@ -85,14 +84,13 @@ class ResourceContainer
     ,200)
 
   reload:()->
-    console.log('reload')
     @resolved = no
     @error = null
     params = @getParams()
 
-    @data = @resource.getMethod(@)(params,(data,headers)=>
+    newData = @resource.getMethod(@)(params,(data,headers)=>
       @resolved = yes
-#      @data = data
+      @data = newData
       @updateRange(params,headers('Content-Range'))
     ,(error)=>
       @resolved = yes
