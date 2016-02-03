@@ -150,7 +150,8 @@ DataSource = (function() {
       }
     };
     resource = new Resource(this, this.url + path, paramDefaults, actions, options);
-    return this.resources[name] = resource;
+    this.resources[name] = resource;
+    return resource;
   };
 
   DataSource.prototype.supportsRangeHeader = function() {
@@ -304,6 +305,12 @@ ResourceContainer = (function() {
     this.range = {
       unit: 'items'
     };
+    if (this.params.limit) {
+      this.range.limit = this.params.limit;
+    }
+    if (this.params.offset) {
+      this.range.offset = this.params.offset;
+    }
     this.$timeout = Injector._$injector.get('$timeout');
     this._scope = Injector._$injector.get('$rootScope').$new(true);
     this._scope.$watch((function(_this) {

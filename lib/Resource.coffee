@@ -59,6 +59,10 @@ class ResourceContainer
   constructor:(@resource,@method,params = {})->
     @params = angular.copy(params)
     @range = {unit:'items'}
+    if @params.limit
+      @range.limit = @params.limit
+    if @params.offset
+      @range.offset = @params.offset
     @$timeout = Injector._$injector.get('$timeout')
     @_scope = Injector._$injector.get('$rootScope').$new(yes)
 
