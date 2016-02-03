@@ -52,6 +52,8 @@ class DataSource
     resource = new Resource(@,@url + path,paramDefaults,actions,options)
     @resources[name] = resource
 
+    return resource
+
   supportsRangeHeader:()->
     return @options.supportsRangeHeader
 
