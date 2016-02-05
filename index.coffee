@@ -8,6 +8,7 @@ Injector = require('./lib/Injector.coffee')
 mod.provider('AdminrDataSources',()->
 
   class DataSourcesProvider
+    assignToScope: yes
     dataSources: {}
 
     createDataSource: (name,url,options)->
@@ -30,3 +31,17 @@ mod.provider('AdminrDataSources',()->
 
   return new DataSourcesProvider()
 )
+
+mod.run(['AdminrDataSources','$rootScope',(AdminrDataSources,$rootScope)->
+  if not AdminrDataSources.assignToScope
+    return
+  keys = Object.keys(AdminrDataSources.dataSources)
+  if keys.length is 1
+    for key,resource of AdminrDataSources.dataSources[keys[0]].resources
+      $rootScope[key] = resource
+  else
+    for dataSourceName,dataSource of AdminrDataSources.dataSources
+      $rootScope[dataSourceName] = {}
+      for key,resource of dataSource.resources
+        $rootScope[dataSourceName][key] = resource
+])

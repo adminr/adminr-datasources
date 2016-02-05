@@ -14,6 +14,8 @@ mod.provider('AdminrDataSources', function() {
   DataSourcesProvider = (function() {
     function DataSourcesProvider() {}
 
+    DataSourcesProvider.prototype.assignToScope = true;
+
     DataSourcesProvider.prototype.dataSources = {};
 
     DataSourcesProvider.prototype.createDataSource = function(name, url, options) {
@@ -46,6 +48,43 @@ mod.provider('AdminrDataSources', function() {
   })();
   return new DataSourcesProvider();
 });
+
+mod.run([
+  'AdminrDataSources', '$rootScope', function(AdminrDataSources, $rootScope) {
+    var dataSource, dataSourceName, key, keys, ref, ref1, resource, results, results1;
+    if (!AdminrDataSources.assignToScope) {
+      return;
+    }
+    keys = Object.keys(AdminrDataSources.dataSources);
+    if (keys.length === 1) {
+      ref = AdminrDataSources.dataSources[keys[0]].resources;
+      results = [];
+      for (key in ref) {
+        resource = ref[key];
+        results.push($rootScope[key] = resource);
+      }
+      return results;
+    } else {
+      ref1 = AdminrDataSources.dataSources;
+      results1 = [];
+      for (dataSourceName in ref1) {
+        dataSource = ref1[dataSourceName];
+        $rootScope[dataSourceName] = {};
+        results1.push((function() {
+          var ref2, results2;
+          ref2 = dataSource.resources;
+          results2 = [];
+          for (key in ref2) {
+            resource = ref2[key];
+            results2.push($rootScope[dataSourceName][key] = resource);
+          }
+          return results2;
+        })());
+      }
+      return results1;
+    }
+  }
+]);
 
 
 },{"./lib/DataSource.coffee":2,"./lib/Injector.coffee":3,"./lib/Resource.coffee":4}],2:[function(require,module,exports){

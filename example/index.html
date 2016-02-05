@@ -16,7 +16,7 @@
 <p>
     unauthorized resource: {{unauthorizedResource.error.data}} (status: {{unauthorizedResource.error.status}})
 </p>
-<p>
+<p ng-init="users = User.query({limit:5,order:'username'})">
     users: {{users.range}} (resolved: {{users.resolved}})
     <ul>
         <li ng-repeat="user in users.data">#{{user.id}} {{user.username}} <a href="#" ng-click="users.deleteItem(user)">x</a></li>

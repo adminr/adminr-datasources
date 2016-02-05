@@ -15,7 +15,7 @@ mod.controller('TestCtrl',function($scope, AdminrDataSources){
 
 
     User = $scope.datasource.getResource('User')
-    $scope.users = User.query({limit:5,order:'username'})
+    //$scope.users = User.query({limit:5,order:'username'})
 
     $scope.user = User.create({username:'test_username'})
 
