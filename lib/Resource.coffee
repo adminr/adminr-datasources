@@ -1,5 +1,6 @@
 Injector = require('./Injector.coffee')
 contentRange = require('content-range')
+EventEmitter = require('eventemitter2').EventEmitter2
 
 
 class Resource
@@ -50,13 +51,15 @@ class Resource
     return @dataSource.supportsRangeHeader()
 
 
-class ResourceContainer
+class ResourceContainer extends EventEmitter
+  emitErrors: no
   data: null
   error: null
   resolved: yes
   range: null
   $timeout: null
   constructor:(@resource,@method,params = {})->
+    super
     @params = angular.copy(params)
     @range = {unit:'items'}
     if @params.limit
@@ -79,6 +82,10 @@ class ResourceContainer
         @setNeedsReload()
     ,yes)
 
+  emit:()->
+    if @emitErrors
+      super
+
   setNeedsReload:()->
     if @_timeoutPromise
       @$timeout.cancel(@_timeoutPromise)
@@ -96,11 +103,14 @@ class ResourceContainer
       @resolved = yes
       @data = newData
       @updateRange(params,headers('Content-Range'))
+      @emit('load')
     ,(error)=>
       @resolved = yes
       if error.status in [401,429]
         @resource.logout()
       @error = error
+      console.log(error)
+      @emit('error',new Error('resource failed to load'))
     )
 
   create:()->
@@ -120,11 +130,13 @@ class ResourceContainer
     @resolved = no
     @data.$save().then(()=>
       @resolved = yes
+      @emit('save')
     )
   $delete:()->
     @resolved = no
     @data.$delete().then(()->
       @resolved = yes
+      @emit('delete')
     )
 
   getParams:()->

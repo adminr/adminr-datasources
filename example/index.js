@@ -17,12 +17,12 @@ mod.controller('TestCtrl',function($scope, AdminrDataSources){
     User = $scope.datasource.getResource('User')
     //$scope.users = User.query({limit:5,order:'username'})
 
-    $scope.user = User.create({username:'test_username'})
+    //$scope.user = User.create({username:'test_username'})
 
-    $scope.saveUser = function(){
-        $scope.user.$save().then(function(){
-            $scope.users.reload()
-            $scope.user = User.create({username:'another_username'})
-        })
-    }
+    //$scope.saveUser = function(){
+    //    $scope.user.$save().then(function(){
+    //        $scope.users.reload()
+    //        $scope.user = User.create({username:'another_username'})
+    //    })
+    //}
 })

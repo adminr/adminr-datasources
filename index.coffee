@@ -32,6 +32,44 @@ mod.provider('AdminrDataSources',()->
   return new DataSourcesProvider()
 )
 
+mod.directive('adminrResource',()->
+  return {
+    link:(scope,elm,attrs)->
+      elm.remove()
+      resource = null
+      init = ()->
+        scope.$eval(attrs.assign + ' = ' + attrs.init)
+        resource = scope.$eval(attrs.assign)
+
+        resource.emitErrors = yes
+
+        attrs.onError = attrs.onError or '1'
+
+        if attrs.onInit
+          scope.$eval(attrs.onInit)
+        if attrs.onLoad
+          resource.on('load',()->
+            scope.$eval(attrs.onLoad)
+          )
+        if attrs.onSave
+          resource.on('save',()->
+            scope.$eval(attrs.onSave)
+            if attrs.onSaveReinit
+              init()
+          )
+        if attrs.onDelete
+          resource.on('delete',()->
+            scope.$eval(attrs.onSave)
+          )
+        if attrs.onError
+          resource.on('error',()->
+            scope.$eval(attrs.onError)
+          )
+
+      init()
+  }
+)
+
 mod.run(['AdminrDataSources','$rootScope',(AdminrDataSources,$rootScope)->
   if not AdminrDataSources.assignToScope
     return

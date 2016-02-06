@@ -16,6 +16,7 @@
     "example": "./node_modules/.bin/parallelshell 'npm run watch' 'npm run serve-example'"
   },
   "dependencies": {
-    "content-range": "^0.2.0"
+    "content-range": "^0.2.0",
+    "eventemitter2": "^0.4.14"
   }
 }

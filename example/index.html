@@ -13,10 +13,16 @@
 </head>
 <body ng-controller="TestCtrl">
 
+<h3>Unauthorized resource</h3>
 <p>
     unauthorized resource: {{unauthorizedResource.error.data}} (status: {{unauthorizedResource.error.status}})
 </p>
-<p ng-init="users = User.query({limit:5,order:'username'})">
+
+<h3>Users</h3>
+
+<p nga-init="users = User.query({limit:5,order:'username'})">
+    on-load triggered: {{test}}<br />
+    <adminr-resource assign="users" init="User.query({limit:5,order:'username'})" on-load="test = 'yes'"></adminr-resource>
     users: {{users.range}} (resolved: {{users.resolved}})
     <ul>
         <li ng-repeat="user in users.data">#{{user.id}} {{user.username}} <a href="#" ng-click="users.deleteItem(user)">x</a></li>
@@ -26,8 +32,13 @@
     offset: <input type="number" ng-model="users.range.offset" />
 
 
-<form>
-    <input type="text" ng-model="user.data.username"  /> <button ng-click="saveUser()">save</button>{{user.resolved}}
+<h3>Create user</h3>
+
+<form ng-init="state='none'">
+    state: {{state}}<br />
+    resolved: {{user.resolved}}<br />
+    <adminr-resource assign="user" init="User.create({username:'test_username'})" on-save="state='saved';users.reload()" on-init="state = 'created'" on-save-reinit="true"></adminr-resource>
+    <input type="text" ng-model="user.data.username" /> <button ng-click="user.$save()">save</button>
 </form>
 </p>
 
