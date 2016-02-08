@@ -55,7 +55,7 @@ class ResourceContainer extends EventEmitter
   emitErrors: no
   data: null
   error: null
-  resolved: yes
+  resolved: ye
   range: null
   $timeout: null
   constructor:(@resource,@method,params = {})->
@@ -109,7 +109,7 @@ class ResourceContainer extends EventEmitter
       if error.status in [401,429]
         @resource.logout()
       @error = error
-      console.log(error)
+      @data = null
       @emit('error',new Error('resource failed to load'))
     )
 

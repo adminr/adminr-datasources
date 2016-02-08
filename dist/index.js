@@ -393,7 +393,7 @@ ResourceContainer = (function(superClass) {
 
   ResourceContainer.prototype.error = null;
 
-  ResourceContainer.prototype.resolved = true;
+  ResourceContainer.prototype.resolved = ye;
 
   ResourceContainer.prototype.range = null;
 
@@ -480,7 +480,7 @@ ResourceContainer = (function(superClass) {
           _this.resource.logout();
         }
         _this.error = error;
-        console.log(error);
+        _this.data = null;
         return _this.emit('error', new Error('resource failed to load'));
       };
     })(this));
