@@ -182,6 +182,20 @@ DataSource = (function() {
     }
   };
 
+  DataSource.prototype.getPublicUrlForPath = function(path) {
+    var publicUrl;
+    if (path == null) {
+      path = '/';
+    }
+    publicUrl = this.url + path;
+    if (publicUrl.indexOf('?') !== -1) {
+      publicUrl = publicUrl + '&token=' + this.getAuthorizationToken();
+    } else {
+      publicUrl = publicUrl + '?token=' + this.getAuthorizationToken();
+    }
+    return publicUrl;
+  };
+
   DataSource.prototype.addResource = function(name, path, paramDefaults, actions, options) {
     var headers, resource;
     if (options == null) {

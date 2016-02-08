@@ -30,6 +30,15 @@ class DataSource
       storage = @_getStorage(if sessionOnly then 'session' else 'local')
       storage[key] = token
 
+  getPublicUrlForPath:(path = '/')->
+    publicUrl = @url + path
+    if publicUrl.indexOf('?') isnt -1
+      publicUrl = publicUrl + '&token=' + @getAuthorizationToken()
+    else
+      publicUrl = publicUrl + '?token=' + @getAuthorizationToken()
+    return publicUrl
+
+
   addResource: (name,path,paramDefaults,actions,options = {})->
     resource = null
     headers = {
