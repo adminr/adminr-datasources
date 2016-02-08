@@ -393,7 +393,7 @@ ResourceContainer = (function(superClass) {
 
   ResourceContainer.prototype.error = null;
 
-  ResourceContainer.prototype.resolved = ye;
+  ResourceContainer.prototype.resolved = true;
 
   ResourceContainer.prototype.range = null;
 

@@ -55,7 +55,7 @@ class ResourceContainer extends EventEmitter
   emitErrors: no
   data: null
   error: null
-  resolved: ye
+  resolved: yes
   range: null
   $timeout: null
   constructor:(@resource,@method,params = {})->
