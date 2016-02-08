@@ -40,7 +40,7 @@ class Resource
     resource = Injector._$injector.get('$resource')(@path,@paramDefaults,actions,@options)
 
     resource.prototype.$save = ()->
-      if not @id
+      if not @id and not @_id
         return @$post()
       else
         return @$put()
