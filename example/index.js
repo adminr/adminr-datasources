@@ -11,7 +11,7 @@ mod.config(function(AdminrDataSourcesProvider){
 
 mod.controller('TestCtrl',function($scope, AdminrDataSources){
     $scope.datasource = AdminrDataSources.getDataSource('Test')
-    $scope.unauthorizedResource = $scope.datasource.getResource('Me').get()
+    //$scope.unauthorizedResource = $scope.datasource.getResource('Me').get()
 
 
     User = $scope.datasource.getResource('User')

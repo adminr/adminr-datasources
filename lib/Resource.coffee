@@ -41,9 +41,9 @@ class Resource
 
     resource.prototype.$save = ()->
       if not @id and not @_id
-        return @$post()
+        return @$post.apply(arguments)
       else
-        return @$put()
+        return @$put.apply(arguments)
 
     return resource
 
@@ -86,6 +86,14 @@ class ResourceContainer extends EventEmitter
     if @emitErrors
       super
 
+  handleError:(error)->
+    @resolved = yes
+    if error.status in [401,429]
+      @resource.logout()
+    @error = error
+    @data = null
+    @emit('error',new Error('resource failed to load'))
+
   setNeedsReload:()->
     if @_timeoutPromise
       @$timeout.cancel(@_timeoutPromise)
@@ -104,14 +112,7 @@ class ResourceContainer extends EventEmitter
       @data = newData
       @updateRange(params,headers('Content-Range'))
       @emit('load')
-    ,(error)=>
-      @resolved = yes
-      if error.status in [401,429]
-        @resource.logout()
-      @error = error
-      @data = null
-      @emit('error',new Error('resource failed to load'))
-    )
+    ,@handleError.bind(@))
 
   create:()->
     params = @getParams()
@@ -124,20 +125,20 @@ class ResourceContainer extends EventEmitter
     item.$delete().then(()=>
       @resolved = yes
       @reload()
-    )
+    ).catch(@handleError.bind(@))
 
   $save:()->
     @resolved = no
     @data.$save().then(()=>
       @resolved = yes
       @emit('save')
-    )
+    ).catch(@handleError.bind(@))
   $delete:()->
     @resolved = no
     @data.$delete().then(()->
       @resolved = yes
       @emit('delete')
-    )
+    ).catch(@handleError.bind(@))
 
   getParams:()->
     params = angular.copy(@params)

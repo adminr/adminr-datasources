@@ -368,9 +368,9 @@ Resource = (function() {
     resource = Injector._$injector.get('$resource')(this.path, this.paramDefaults, actions, this.options);
     resource.prototype.$save = function() {
       if (!this.id && !this._id) {
-        return this.$post();
+        return this.$post.apply(arguments);
       } else {
-        return this.$put();
+        return this.$put.apply(arguments);
       }
     };
     return resource;
@@ -448,6 +448,17 @@ ResourceContainer = (function(superClass) {
     }
   };
 
+  ResourceContainer.prototype.handleError = function(error) {
+    var ref;
+    this.resolved = true;
+    if ((ref = error.status) === 401 || ref === 429) {
+      this.resource.logout();
+    }
+    this.error = error;
+    this.data = null;
+    return this.emit('error', new Error('resource failed to load'));
+  };
+
   ResourceContainer.prototype.setNeedsReload = function() {
     if (this._timeoutPromise) {
       this.$timeout.cancel(this._timeoutPromise);
@@ -472,18 +483,7 @@ ResourceContainer = (function(superClass) {
         _this.updateRange(params, headers('Content-Range'));
         return _this.emit('load');
       };
-    })(this), (function(_this) {
-      return function(error) {
-        var ref;
-        _this.resolved = true;
-        if ((ref = error.status) === 401 || ref === 429) {
-          _this.resource.logout();
-        }
-        _this.error = error;
-        _this.data = null;
-        return _this.emit('error', new Error('resource failed to load'));
-      };
-    })(this));
+    })(this), this.handleError.bind(this));
   };
 
   ResourceContainer.prototype.create = function() {
@@ -500,7 +500,7 @@ ResourceContainer = (function(superClass) {
         _this.resolved = true;
         return _this.reload();
       };
-    })(this));
+    })(this))["catch"](this.handleError.bind(this));
   };
 
   ResourceContainer.prototype.$save = function() {
@@ -510,7 +510,7 @@ ResourceContainer = (function(superClass) {
         _this.resolved = true;
         return _this.emit('save');
       };
-    })(this));
+    })(this))["catch"](this.handleError.bind(this));
   };
 
   ResourceContainer.prototype.$delete = function() {
@@ -518,7 +518,7 @@ ResourceContainer = (function(superClass) {
     return this.data.$delete().then(function() {
       this.resolved = true;
       return this.emit('delete');
-    });
+    })["catch"](this.handleError.bind(this));
   };
 
   ResourceContainer.prototype.getParams = function() {
