@@ -368,9 +368,9 @@ Resource = (function() {
     resource = Injector._$injector.get('$resource')(this.path, this.paramDefaults, actions, this.options);
     resource.prototype.$save = function() {
       if (!this.id && !this._id) {
-        return this.$post.apply(arguments);
+        return this.$post();
       } else {
-        return this.$put.apply(arguments);
+        return this.$put();
       }
     };
     return resource;

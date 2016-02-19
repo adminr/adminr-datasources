@@ -41,9 +41,9 @@ class Resource
 
     resource.prototype.$save = ()->
       if not @id and not @_id
-        return @$post.apply(arguments)
+        return @$post()
       else
-        return @$put.apply(arguments)
+        return @$put()
 
     return resource
 
