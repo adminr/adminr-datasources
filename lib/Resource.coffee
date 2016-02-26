@@ -41,9 +41,9 @@ class Resource
 
     resource.prototype.$save = ()->
       if not @id and not @_id
-        return @$post()
+        return @$post.apply(@,arguments)
       else
-        return @$put()
+        return @$put.apply(@,arguments)
 
     return resource
 
@@ -129,7 +129,7 @@ class ResourceContainer extends EventEmitter
 
   $save:()->
     @resolved = no
-    @data.$save().then(()=>
+    @data.$save.apply(@data,arguments).then(()=>
       @resolved = yes
       @emit('save')
     ).catch(@handleError.bind(@))

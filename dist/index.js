@@ -368,9 +368,9 @@ Resource = (function() {
     resource = Injector._$injector.get('$resource')(this.path, this.paramDefaults, actions, this.options);
     resource.prototype.$save = function() {
       if (!this.id && !this._id) {
-        return this.$post();
+        return this.$post.apply(this, arguments);
       } else {
-        return this.$put();
+        return this.$put.apply(this, arguments);
       }
     };
     return resource;
@@ -505,7 +505,7 @@ ResourceContainer = (function(superClass) {
 
   ResourceContainer.prototype.$save = function() {
     this.resolved = false;
-    return this.data.$save().then((function(_this) {
+    return this.data.$save.apply(this.data, arguments).then((function(_this) {
       return function() {
         _this.resolved = true;
         return _this.emit('save');
