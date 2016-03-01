@@ -58,6 +58,7 @@ class ResourceContainer extends EventEmitter
   resolved: yes
   range: null
   $timeout: null
+  ignoreNextRangeUpdate: yes
   constructor:(@resource,@method,params = {})->
     super
     @params = angular.copy(params)
@@ -80,7 +81,10 @@ class ResourceContainer extends EventEmitter
     @_scope.$watch(()=>
       return @range
     ,(value, oldValue)=>
-      if (value.page or 0) isnt (oldValue.page or 0)
+      if @ignoreNextRangeUpdate
+        @ignoreNextRangeUpdate = no
+        return
+      if (value.page or 0) isnt (oldValue.page or 0) and (value.offset or 0) is (oldValue.offset or 0)
         value.offset = value.page*value.limit
       if (value.offset or 0) isnt (oldValue.offset or 0) or ((value.limit or 0) isnt (oldValue.limit or 0) and oldValue.limit)
         @setNeedsReload()
@@ -159,6 +163,7 @@ class ResourceContainer extends EventEmitter
       return params
 
   updateRange:(params,rangeHeader)->
+    @ignoreNextRangeUpdate = yes
     if rangeHeader
       range = contentRange.parse(rangeHeader)
       @range.offset = range.start

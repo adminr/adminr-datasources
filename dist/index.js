@@ -399,6 +399,8 @@ ResourceContainer = (function(superClass) {
 
   ResourceContainer.prototype.$timeout = null;
 
+  ResourceContainer.prototype.ignoreNextRangeUpdate = true;
+
   function ResourceContainer(resource1, method1, params) {
     this.resource = resource1;
     this.method = method1;
@@ -438,7 +440,11 @@ ResourceContainer = (function(superClass) {
       };
     })(this), (function(_this) {
       return function(value, oldValue) {
-        if ((value.page || 0) !== (oldValue.page || 0)) {
+        if (_this.ignoreNextRangeUpdate) {
+          _this.ignoreNextRangeUpdate = false;
+          return;
+        }
+        if ((value.page || 0) !== (oldValue.page || 0) && (value.offset || 0) === (oldValue.offset || 0)) {
           value.offset = value.page * value.limit;
         }
         if ((value.offset || 0) !== (oldValue.offset || 0) || ((value.limit || 0) !== (oldValue.limit || 0) && oldValue.limit)) {
@@ -550,6 +556,7 @@ ResourceContainer = (function(superClass) {
 
   ResourceContainer.prototype.updateRange = function(params, rangeHeader) {
     var limit, range, ref, ref1, ref2, ref3;
+    this.ignoreNextRangeUpdate = true;
     if (rangeHeader) {
       range = contentRange.parse(rangeHeader);
       this.range.offset = range.start;
