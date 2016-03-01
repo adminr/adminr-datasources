@@ -416,6 +416,9 @@ ResourceContainer = (function(superClass) {
     if (this.params.offset) {
       this.range.offset = this.params.offset;
     }
+    if (isFinite(this.range.limit) && isFinite(this.range.offset)) {
+      this.range.page = Math.floor(this.range.offset / this.range.limit);
+    }
     this.$timeout = Injector._$injector.get('$timeout');
     this._scope = Injector._$injector.get('$rootScope').$new(true);
     this._scope.$watch((function(_this) {
@@ -435,6 +438,9 @@ ResourceContainer = (function(superClass) {
       };
     })(this), (function(_this) {
       return function(value, oldValue) {
+        if ((value.page || 0) !== (oldValue.page || 0)) {
+          value.offset = value.page * value.limit;
+        }
         if ((value.offset || 0) !== (oldValue.offset || 0) || ((value.limit || 0) !== (oldValue.limit || 0) && oldValue.limit)) {
           return _this.setNeedsReload();
         }
@@ -555,10 +561,14 @@ ResourceContainer = (function(superClass) {
       if (!this.range.limit || this.range.limit < limit) {
         this.range.limit = limit;
       }
-      return this.range.count = range.count;
+      this.range.count = range.count;
     } else {
       if ((ref = this.resource.dataSource) != null ? (ref1 = ref.options) != null ? ref1.updateRangeHandler : void 0 : void 0) {
-        return (ref2 = this.resource.dataSource) != null ? (ref3 = ref2.options) != null ? ref3.updateRangeHandler(this.range, this.data, params) : void 0 : void 0;
+        if ((ref2 = this.resource.dataSource) != null) {
+          if ((ref3 = ref2.options) != null) {
+            ref3.updateRangeHandler(this.range, this.data, params);
+          }
+        }
       } else {
         this.range = this.range || {};
         this.range.offset = 0;
@@ -572,9 +582,12 @@ ResourceContainer = (function(superClass) {
           this.range.offset = params.offset;
         }
         if (params.page) {
-          return this.range.offset = params.page * this.range.limit;
+          this.range.offset = params.page * this.range.limit;
         }
       }
+    }
+    if (isFinite(this.range.limit) && isFinite(this.range.offset)) {
+      return this.range.page = Math.floor(this.range.offset / this.range.limit);
     }
   };
 
