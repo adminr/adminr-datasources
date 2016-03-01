@@ -419,7 +419,7 @@ ResourceContainer = (function(superClass) {
       this.range.offset = this.params.offset;
     }
     if (isFinite(this.range.limit) && isFinite(this.range.offset)) {
-      this.range.page = Math.floor(this.range.offset / this.range.limit);
+      this.range.page = Math.floor(this.range.offset / this.range.limit) + 1;
     }
     this.$timeout = Injector._$injector.get('$timeout');
     this._scope = Injector._$injector.get('$rootScope').$new(true);
@@ -445,7 +445,7 @@ ResourceContainer = (function(superClass) {
           return;
         }
         if ((value.page || 0) !== (oldValue.page || 0) && (value.offset || 0) === (oldValue.offset || 0)) {
-          value.offset = value.page * value.limit;
+          value.offset = (value.page - 1) * value.limit;
         }
         if ((value.offset || 0) !== (oldValue.offset || 0) || ((value.limit || 0) !== (oldValue.limit || 0) && oldValue.limit)) {
           return _this.setNeedsReload();
@@ -589,12 +589,12 @@ ResourceContainer = (function(superClass) {
           this.range.offset = params.offset;
         }
         if (params.page) {
-          this.range.offset = params.page * this.range.limit;
+          this.range.offset = (params.page - 1) * this.range.limit;
         }
       }
     }
     if (isFinite(this.range.limit) && isFinite(this.range.offset)) {
-      return this.range.page = Math.floor(this.range.offset / this.range.limit);
+      return this.range.page = Math.floor(this.range.offset / this.range.limit) + 1;
     }
   };
 

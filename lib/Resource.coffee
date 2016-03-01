@@ -68,7 +68,7 @@ class ResourceContainer extends EventEmitter
     if @params.offset
       @range.offset = @params.offset
     if isFinite(@range.limit) and isFinite(@range.offset)
-      @range.page = Math.floor(@range.offset/@range.limit)
+      @range.page = Math.floor(@range.offset/@range.limit) + 1
     @$timeout = Injector._$injector.get('$timeout')
     @_scope = Injector._$injector.get('$rootScope').$new(yes)
 
@@ -85,7 +85,7 @@ class ResourceContainer extends EventEmitter
         @ignoreNextRangeUpdate = no
         return
       if (value.page or 0) isnt (oldValue.page or 0) and (value.offset or 0) is (oldValue.offset or 0)
-        value.offset = value.page*value.limit
+        value.offset = (value.page - 1)*value.limit
       if (value.offset or 0) isnt (oldValue.offset or 0) or ((value.limit or 0) isnt (oldValue.limit or 0) and oldValue.limit)
         @setNeedsReload()
     ,yes)
@@ -187,9 +187,9 @@ class ResourceContainer extends EventEmitter
         if params.offset
           @range.offset = params.offset
         if params.page
-          @range.offset = params.page * @range.limit
+          @range.offset = (params.page - 1) * @range.limit
     if isFinite(@range.limit) and isFinite(@range.offset)
-      @range.page = Math.floor(@range.offset/@range.limit)
+      @range.page = Math.floor(@range.offset/@range.limit) + 1
 
 
 module.exports = Resource
