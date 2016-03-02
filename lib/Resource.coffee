@@ -122,6 +122,8 @@ class ResourceContainer extends EventEmitter
       @emit('load')
     ,@handleError.bind(@))
 
+    @$promise = newData.$promise
+
   create:()->
     params = @getParams()
     res = @resource.getResource(@)

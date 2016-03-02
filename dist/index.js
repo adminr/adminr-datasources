@@ -488,7 +488,7 @@ ResourceContainer = (function(superClass) {
     this.resolved = false;
     this.error = null;
     params = this.getParams();
-    return newData = this.resource.getMethod(this)(params, (function(_this) {
+    newData = this.resource.getMethod(this)(params, (function(_this) {
       return function(data, headers) {
         _this.resolved = true;
         _this.data = newData;
@@ -496,6 +496,7 @@ ResourceContainer = (function(superClass) {
         return _this.emit('load');
       };
     })(this), this.handleError.bind(this));
+    return this.$promise = newData.$promise;
   };
 
   ResourceContainer.prototype.create = function() {
