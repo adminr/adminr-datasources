@@ -11,7 +11,7 @@ class Resource
     methods.forEach((method)=>
       @[method] = (params)->
         container = new ResourceContainer(@,method,params)
-        container.setNeedsReload()
+        container.reload()
         return container
     )
 
@@ -115,14 +115,24 @@ class ResourceContainer extends EventEmitter
     @error = null
     params = @getParams()
 
+    $q = Injector._$injector.get('$q')
+    $timeout = Injector._$injector.get('$timeout')
+    deferred = $q.defer()
+
     newData = @resource.getMethod(@)(params,(data,headers)=>
       @resolved = yes
       @data = newData
       @updateRange(params,headers('Content-Range'))
       @emit('load')
-    ,@handleError.bind(@))
+      $timeout(()->
+        deferred.resolve(data,headers)
+      ,0)
+    ,(error)=>
+      @handleError(error)
+      deferred.reject(error)
+    )
 
-    @$promise = newData.$promise
+    @$promise = deferred.promise
 
   create:()->
     params = @getParams()

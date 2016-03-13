@@ -14,8 +14,11 @@ mod.controller('TestCtrl',function($scope, AdminrDataSources){
     //$scope.unauthorizedResource = $scope.datasource.getResource('Me').get()
 
 
-    User = $scope.datasource.getResource('User')
+    //User = $scope.datasource.getResource('User')
     //$scope.users = User.query({limit:5,order:'username'})
+    //$scope.users.$promise.then(function(data){
+    //    console.log('!!!!',$scope.users.data,data)
+    //})
 
     //$scope.user = User.create({username:'test_username'})
 

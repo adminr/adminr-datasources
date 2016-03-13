@@ -325,7 +325,7 @@ Resource = (function() {
         return _this[method] = function(params) {
           var container;
           container = new ResourceContainer(this, method, params);
-          container.setNeedsReload();
+          container.reload();
           return container;
         };
       };
@@ -484,19 +484,30 @@ ResourceContainer = (function(superClass) {
   };
 
   ResourceContainer.prototype.reload = function() {
-    var newData, params;
+    var $q, $timeout, deferred, newData, params;
     this.resolved = false;
     this.error = null;
     params = this.getParams();
+    $q = Injector._$injector.get('$q');
+    $timeout = Injector._$injector.get('$timeout');
+    deferred = $q.defer();
     newData = this.resource.getMethod(this)(params, (function(_this) {
       return function(data, headers) {
         _this.resolved = true;
         _this.data = newData;
         _this.updateRange(params, headers('Content-Range'));
-        return _this.emit('load');
+        _this.emit('load');
+        return $timeout(function() {
+          return deferred.resolve(data, headers);
+        }, 0);
       };
-    })(this), this.handleError.bind(this));
-    return this.$promise = newData.$promise;
+    })(this), (function(_this) {
+      return function(error) {
+        _this.handleError(error);
+        return deferred.reject(error);
+      };
+    })(this));
+    return this.$promise = deferred.promise;
   };
 
   ResourceContainer.prototype.create = function() {
