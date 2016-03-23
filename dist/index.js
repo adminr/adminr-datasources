@@ -493,7 +493,11 @@ ResourceContainer = (function(superClass) {
     deferred = $q.defer();
     newData = this.resource.getMethod(this)(params, (function(_this) {
       return function(data, headers) {
+        var ref;
         _this.resolved = true;
+        if ((ref = data.status) === 401 || ref === 429) {
+          return _this.resource.logout();
+        }
         _this.data = newData;
         _this.updateRange(params, headers('Content-Range'));
         _this.emit('load');

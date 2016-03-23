@@ -121,6 +121,8 @@ class ResourceContainer extends EventEmitter
 
     newData = @resource.getMethod(@)(params,(data,headers)=>
       @resolved = yes
+      if data.status in [401,429]
+        return @resource.logout()
       @data = newData
       @updateRange(params,headers('Content-Range'))
       @emit('load')
